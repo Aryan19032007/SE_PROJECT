@@ -26,7 +26,7 @@ class _QueryFormState extends State<QueryForm> {
     });
   }
 
-Future<String?> uploadToCloudinary(File image) async {
+Future<String?> uploadToCloudinary(File image, String description) async {
   final url = Uri.parse(
   "https://api.cloudinary.com/v1_1/dcdcojztw/image/upload",
 );
@@ -34,6 +34,7 @@ Future<String?> uploadToCloudinary(File image) async {
 
   final request = http.MultipartRequest("POST", url)
     ..fields['upload_preset'] = 'fixbit_unsigned'
+    ..fields['context'] = 'description=$description'
     ..files.add(
       await http.MultipartFile.fromPath('file', image.path),
     );
@@ -92,16 +93,20 @@ Future<String?> uploadToCloudinary(File image) async {
       String? imageUrl;
 
       if (_image != null) {
-        imageUrl = await uploadToCloudinary(File(_image!.path));
+        imageUrl = await uploadToCloudinary(File(_image!.path), _descriptionController.text);
         debugPrint("Uploaded image URL: $imageUrl");
       }
 
       debugPrint("Description: ${_descriptionController.text}");
 
       // For now, just test upload
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Query submitted (test mode)')),
-      );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Query submitted (test mode)')),
+          );
+        }
+      });
     }
   },
   child: const Text('Submit Query'),
