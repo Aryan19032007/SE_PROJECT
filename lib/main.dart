@@ -3,10 +3,23 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-
 import 'query_form.dart';
 
-void main() {
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'services/auth_service.dart';
+
+
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   runApp(
     ChangeNotifierProvider(
       create: (context) => ThemeProvider(),
@@ -14,6 +27,7 @@ void main() {
     ),
   );
 }
+
 
 class ThemeProvider with ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.system;
@@ -116,21 +130,58 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text('Welcome to FixBit!', style: Theme.of(context).textTheme.displayLarge),
+      body: StreamBuilder<User?>(
+  stream: FirebaseAuth.instance.authStateChanges(),
+  builder: (context, snapshot) {
+
+
+    final user = snapshot.data;
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+
+          Text(
+            'Welcome to FixBit!',
+            style: Theme.of(context).textTheme.displayLarge,
+          ),
+
+          const SizedBox(height: 20),
+
+          if (user == null) ...[
+            ElevatedButton(
+              onPressed: () async {
+                await AuthService().signInWithGoogle();
+              },
+              child: const Text("Sign in with Google"),
+            ),
+          ] else ...[
+            Text("Logged in as ${user.email}"),
             const SizedBox(height: 20),
+
             ElevatedButton(
               onPressed: () {
                 context.go('/query');
               },
               child: const Text('Submit a Repair Query'),
             ),
+
+            const SizedBox(height: 10),
+
+            ElevatedButton(
+              onPressed: () async {
+                await AuthService().signOut();
+              },
+              child: const Text("Sign Out"),
+            ),
           ],
-        ),
+        ],
       ),
+    );
+  },
+),
+
     );
   }
 }
