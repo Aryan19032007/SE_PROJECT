@@ -1,4 +1,4 @@
-# SE-project
+testing connection
 Testing connection to github
 Testing firebase connection
 testing
