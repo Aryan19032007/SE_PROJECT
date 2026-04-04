@@ -1,20 +1,47 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Login</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
 <div class="container">
   <h2>FixBit Login</h2>
 
-  <input type="email" id="email" placeholder="Email">
+  <input id="email" placeholder="Phone or Email">
   <input type="password" id="password" placeholder="Password">
 
   <button onclick="login()">Login</button>
+
+  <!-- REGISTER OPTION -->
+  <p style="margin-top:15px;">Don't have an account?</p>
+  <button onclick="showRegisterOptions()">Register</button>
+
+  <div id="registerOptions" style="display:none; margin-top:10px;">
+    <button onclick="goUser()">👤 Register as User</button>
+    <button onclick="goShop()">🏪 Register as Shop</button>
+  </div>
+
 </div>
 
 <script src="script.js"></script>
+
+<script>
+function showRegisterOptions() {
+  document.getElementById("registerOptions").style.display = "block";
+}
+
+function goUser() {
+  window.location.href = "user-register.html";
+}
+
+function goShop() {
+  window.location.href = "shop-register.html";
+}
+</script>
+
 </body>
 </html>

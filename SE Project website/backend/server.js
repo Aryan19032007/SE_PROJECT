@@ -52,9 +52,12 @@ app.get("/", (req, res) => {
 
 // ================= REGISTER =================
 app.post("/register", (req, res) => {
-  const { name, email, password, role } = req.body;
+const { name, email, phone, password, role, latitude, longitude } = req.body;
 
-  const sql = "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)";
+const sql = `
+INSERT INTO users (name, email, phone, password, role, latitude, longitude)
+VALUES (?, ?, ?, ?, ?, ?, ?)
+`;
   
   db.query(sql, [name, email, password, role], (err, result) => {
     if (err) {
@@ -69,9 +72,12 @@ app.post("/register", (req, res) => {
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
 
-  const sql = "SELECT * FROM users WHERE email=? AND password=?";
-  
-  db.query(sql, [email, password], (err, result) => {
+  const sql = `
+    SELECT * FROM users
+    WHERE (email = ? OR phone = ?) AND password = ?
+  `;
+
+  db.query(sql, [email, email, password], (err, result) => {
     if (err) {
       console.error(err);
       return res.status(500).send("Login error");

@@ -1,34 +1,121 @@
-body {
-  font-family: Arial;
-  background: #a9d1c2;
+* {
   margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
 }
 
+/* BODY */
+body {
+  height: 100vh;
+  background: linear-gradient(135deg, #6fb1a0, #4a8f7d);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* CARD */
 .container {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 20px;
   width: 350px;
-  margin: 80px auto;
-  padding: 30px;
-  background: rgb(209, 224, 211);
-  border-radius: 10px;
-  box-shadow: 0 0 10px #ccc;
+
+  text-align: center;
+
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  animation: fadeIn 0.6s ease;
 }
 
+/* TITLE */
+h2 {
+  margin-bottom: 25px;
+  font-size: 28px;
+  color: #333;
+}
+
+/* INPUTS */
 input, select, textarea {
   width: 100%;
-  padding: 10px;
-  margin: 8px 0;
+  padding: 12px;
+  margin: 10px 0;
+
+  border: 1px solid #ccc;
   border-radius: 8px;
+
+  font-size: 14px;
+  outline: none;
+  transition: 0.3s;
 }
 
+/* INPUT FOCUS */
+input:focus, select:focus, textarea:focus {
+  border-color: #148c43;
+  box-shadow: 0 0 5px rgba(20,140,67,0.5);
+}
+
+/* BUTTON */
 button {
   width: 100%;
-  padding: 10px;
-  background: #0f944d;
+  padding: 12px;
+  margin-top: 15px;
+
+  background: linear-gradient(135deg, #16a34a, #15803d);
   color: white;
+
   border: none;
+  border-radius: 8px;
+
+  font-size: 16px;
+  font-weight: bold;
+
   cursor: pointer;
+  transition: 0.3s;
 }
 
+/* BUTTON HOVER */
 button:hover {
-  background: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+}
+
+/* MAP */
+#map {
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+/* TEXT */
+p {
+  font-size: 13px;
+  color: #555;
+}
+
+/* ANIMATION */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+#requests div {
+  border-radius: 10px;
+  background: #f9f9f9;
+}
+.container h2 {
+  font-size: 32px;
+  color: #15803d;
+}
+
+.container p:first-of-type {
+  color: #222;
+}
+
+button:nth-child(2) {
+  margin-top: 10px;
 }
