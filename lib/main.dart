@@ -10,6 +10,7 @@ import 'firebase_options.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'services/auth_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 
 
@@ -159,6 +160,16 @@ class HomeScreen extends StatelessWidget {
           ] else ...[
             Text("Logged in as ${user.email}"),
             const SizedBox(height: 20),
+
+            ElevatedButton(
+  onPressed: () async {
+    await FirebaseFirestore.instance.collection('test').add({
+      'message': 'hello',
+      'time': FieldValue.serverTimestamp(),
+    });
+  },
+  child: Text("Test Firestore"),
+),
 
             ElevatedButton(
               onPressed: () {
