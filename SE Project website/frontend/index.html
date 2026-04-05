@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FixBit</title>
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="container">
+
+  <h2>🔧 FixBit</h2>
+
+  <p style="font-size:16px; font-weight:600; margin-bottom:10px;">
+    Find the Best Price for Mobile Repair Near You 📱
+  </p>
+
+  <p style="margin-bottom:20px;">
+    Upload your issue → Get quotes from nearby shops → Choose the best deal 💰
+  </p>
+
+  <button onclick="window.location.href='login.html'">
+    🚀 Get Started
+  </button>
+
+  <button onclick="showRegisterOptions()" style="background:#eee; color:#333;">
+    Create Account
+  </button>
+
+  <div id="registerOptions" style="display:none; margin-top:10px;">
+    <button onclick="goUser()">👤 I am a User</button>
+    <button onclick="goShop()">🏪 I am a Shopkeeper</button>
+  </div>
+
+</div>
+
+<script>
+function showRegisterOptions() {
+  document.getElementById("registerOptions").style.display = "block";
+}
+
+function goUser() {
+  window.location.href = "user-register.html";
+}
+
+function goShop() {
+  window.location.href = "shop-register.html";
+}
+</script>
+
+</body>
+</html>
