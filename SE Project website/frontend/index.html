@@ -1,55 +1,211 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>FixBit</title>
-  <link rel="stylesheet" href="style.css">
-
-  <!-- Google Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FixBit — Mobile Repair Marketplace</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { outfit: ['Outfit','sans-serif'], dm: ['DM Sans','sans-serif'] }
+        }
+      }
+    }
+  </script>
 </head>
+<body class="font-dm">
 
-<body>
+<!-- ======= NAVBAR ======= -->
+<nav class="navbar" id="navbar">
+  <a href="index.html" class="nav-logo">
+    <span>🔧</span> FixBit
+  </a>
+  <div class="nav-links">
+    <a href="login.html" class="btn btn-outline btn-sm">Log In</a>
+    <button onclick="showRegOptions()" class="btn btn-primary btn-sm">Register</button>
+  </div>
+</nav>
 
-<div class="container">
-
-  <h2>🔧 FixBit</h2>
-
-  <p style="font-size:16px; font-weight:600; margin-bottom:10px;">
-    Find the Best Price for Mobile Repair Near You 📱
-  </p>
-
-  <p style="margin-bottom:20px;">
-    Upload your issue → Get quotes from nearby shops → Choose the best deal 💰
-  </p>
-
-  <button onclick="window.location.href='login.html'">
-    🚀 Get Started
-  </button>
-
-  <button onclick="showRegisterOptions()" style="background:#eee; color:#333;">
-    Create Account
-  </button>
-
-  <div id="registerOptions" style="display:none; margin-top:10px;">
-    <button onclick="goUser()">👤 I am a User</button>
-    <button onclick="goShop()">🏪 I am a Shopkeeper</button>
+<!-- ======= HERO ======= -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-inner">
+      <div class="hero-badge">
+        <span>📍</span> Location-Based Quotes
+      </div>
+      <h1 class="font-outfit">
+        Best Price for<br/>
+        <span style="color: #2dd4bf">Mobile Repair</span><br/>
+        Near You
+      </h1>
+      <p>
+        Describe your issue → Get instant quotes from verified<br class="hidden sm:block"/>
+        shops within your chosen radius → Pick the best deal.
+      </p>
+      <div class="hero-cta">
+        <a href="user-register.html" class="btn btn-primary btn-lg">
+          📱 I Need Repair
+        </a>
+        <a href="shop-register.html" class="btn btn-secondary btn-lg" style="background:rgba(255,255,255,.1); color:white; border-color:rgba(255,255,255,.2);">
+          🏪 Register My Shop
+        </a>
+      </div>
+    </div>
   </div>
 
+  <!-- Floating stats -->
+  <div class="absolute bottom-20 left-0 right-0 flex justify-center gap-6 px-4 flex-wrap z-10" style="animation: fadeUp .7s .35s ease both; opacity:0;">
+    <div style="background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:.9rem 1.4rem; text-align:center; color:white;">
+      <div class="font-outfit font-bold text-2xl text-teal-300">5km–40km</div>
+      <div style="font-size:.75rem; opacity:.6; margin-top:.1rem">Customizable Radius</div>
+    </div>
+    <div style="background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:.9rem 1.4rem; text-align:center; color:white;">
+      <div class="font-outfit font-bold text-2xl text-teal-300">Real-time</div>
+      <div style="font-size:.75rem; opacity:.6; margin-top:.1rem">Shop Quotes</div>
+    </div>
+    <div style="background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:.9rem 1.4rem; text-align:center; color:white;">
+      <div class="font-outfit font-bold text-2xl text-teal-300">Free</div>
+      <div style="font-size:.75rem; opacity:.6; margin-top:.1rem">No Hidden Fees</div>
+    </div>
+  </div>
+
+  <div class="scroll-down">
+    <span>Scroll to explore</span>
+    <span style="font-size:1.2rem">↓</span>
+  </div>
+</section>
+
+<!-- ======= HOW IT WORKS ======= -->
+<section class="py-20 px-4" style="background: #f8fafc;">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-12">
+      <span class="badge badge-teal mb-3">Simple Process</span>
+      <h2 class="font-outfit text-4xl font-bold text-slate-800">How FixBit Works</h2>
+      <p class="text-slate-500 mt-3 text-base">Get your phone fixed in 3 easy steps</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="step-card animate-fadeUp anim-delay-1" style="opacity:0">
+        <div class="step-icon">📤</div>
+        <div class="step-num">Step 1</div>
+        <h3 class="font-outfit text-xl font-bold text-slate-800 mb-2">Submit Your Request</h3>
+        <p class="text-slate-500 text-sm">Describe your issue, upload a photo, and set how far you want shops to be — 5, 10, 20, or 40 km away.</p>
+      </div>
+
+      <div class="step-card animate-fadeUp anim-delay-2" style="opacity:0">
+        <div class="step-icon" style="background: linear-gradient(135deg, #f97316, #ea580c);">💬</div>
+        <div class="step-num" style="color:#f97316">Step 2</div>
+        <h3 class="font-outfit text-xl font-bold text-slate-800 mb-2">Get Shop Quotes</h3>
+        <p class="text-slate-500 text-sm">Shops near you see your request and send their best price. All shops within your radius can compete for your business.</p>
+      </div>
+
+      <div class="step-card animate-fadeUp anim-delay-3" style="opacity:0">
+        <div class="step-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">✅</div>
+        <div class="step-num" style="color:#8b5cf6">Step 3</div>
+        <h3 class="font-outfit text-xl font-bold text-slate-800 mb-2">Choose the Best Deal</h3>
+        <p class="text-slate-500 text-sm">Compare prices from multiple shops and pick the one that suits you best. No obligation, fully transparent.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= FEATURES ======= -->
+<section class="py-20 px-4" style="background:white;">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-12">
+      <h2 class="font-outfit text-4xl font-bold text-slate-800">Why FixBit?</h2>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <!-- Feature cards -->
+      <div class="card p-6 card-hover">
+        <div class="text-3xl mb-3">📍</div>
+        <h4 class="font-outfit font-bold text-slate-800 mb-1">Location-Based Matching</h4>
+        <p class="text-slate-500 text-sm">Only shops within your chosen radius receive your request. Choose 5km, 10km, 20km, or 40km.</p>
+      </div>
+      <div class="card p-6 card-hover">
+        <div class="text-3xl mb-3">⚡</div>
+        <h4 class="font-outfit font-bold text-slate-800 mb-1">Instant Quotes</h4>
+        <p class="text-slate-500 text-sm">No waiting days — shops respond in real-time with their best prices so you can decide fast.</p>
+      </div>
+      <div class="card p-6 card-hover">
+        <div class="text-3xl mb-3">💸</div>
+        <h4 class="font-outfit font-bold text-slate-800 mb-1">Save Money</h4>
+        <p class="text-slate-500 text-sm">Competition between shops drives prices down. You always get the market's best price.</p>
+      </div>
+      <div class="card p-6 card-hover">
+        <div class="text-3xl mb-3">📸</div>
+        <h4 class="font-outfit font-bold text-slate-800 mb-1">Photo Support</h4>
+        <p class="text-slate-500 text-sm">Upload a photo of your damage so shops can accurately diagnose and quote your repair.</p>
+      </div>
+      <div class="card p-6 card-hover">
+        <div class="text-3xl mb-3">🏪</div>
+        <h4 class="font-outfit font-bold text-slate-800 mb-1">For Shopkeepers</h4>
+        <p class="text-slate-500 text-sm">Get new customers automatically — see repair requests from nearby users and send quotes instantly.</p>
+      </div>
+      <div class="card p-6 card-hover">
+        <div class="text-3xl mb-3">🔒</div>
+        <h4 class="font-outfit font-bold text-slate-800 mb-1">100% Free</h4>
+        <p class="text-slate-500 text-sm">FixBit is free for both users and shops. No commissions, no hidden fees — ever.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= CTA ======= -->
+<section class="py-20 px-4" style="background: linear-gradient(135deg, #0f172a, #134e4a);">
+  <div class="max-w-xl mx-auto text-center">
+    <h2 class="font-outfit text-4xl font-bold text-white mb-4">Ready to get started?</h2>
+    <p style="color:rgba(255,255,255,.65)" class="mb-8">Join thousands of users who already use FixBit to find the best repair deals near them.</p>
+    <div class="flex gap-4 justify-center flex-wrap">
+      <a href="user-register.html" class="btn btn-primary btn-lg">📱 Register as User</a>
+      <a href="shop-register.html" class="btn btn-lg" style="background:rgba(255,255,255,.1); color:white; border:1.5px solid rgba(255,255,255,.2);">🏪 Register as Shop</a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="py-6 px-4 text-center" style="background:#0f172a; color:rgba(255,255,255,.35); font-size:.8rem;">
+  <p>© 2025 FixBit. Built for the local repair economy. 🔧</p>
+</footer>
+
+<!-- Register Options Modal -->
+<div id="regModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:200; display:none; align-items:center; justify-content:center;">
+  <div class="auth-card" style="max-width:340px;">
+    <h3 class="font-outfit text-xl font-bold text-slate-800 mb-4 text-center">Create an Account</h3>
+    <a href="user-register.html" class="btn btn-primary btn-full mb-3">👤 I'm a User</a>
+    <a href="shop-register.html" class="btn btn-secondary btn-full">🏪 I'm a Shopkeeper</a>
+    <button onclick="hideRegOptions()" class="btn btn-outline btn-full mt-2" style="margin-top:.7rem">Cancel</button>
+  </div>
 </div>
 
 <script>
-function showRegisterOptions() {
-  document.getElementById("registerOptions").style.display = "block";
-}
+  // Navbar scroll effect
+  window.addEventListener('scroll', () => {
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 10);
+  });
 
-function goUser() {
-  window.location.href = "user-register.html";
-}
+  function showRegOptions() {
+    const m = document.getElementById('regModal');
+    m.style.display = 'flex';
+  }
+  function hideRegOptions() {
+    document.getElementById('regModal').style.display = 'none';
+  }
 
-function goShop() {
-  window.location.href = "shop-register.html";
-}
+  // Intersection observer for step cards
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.animation = e.target.style.animation || 'fadeUp .6s ease forwards';
+      }
+    });
+  }, { threshold: .2 });
+
+  document.querySelectorAll('.animate-fadeUp').forEach(el => observer.observe(el));
 </script>
-
 </body>
 </html>

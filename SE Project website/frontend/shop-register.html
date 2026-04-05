@@ -1,31 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Shop Register</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FixBit — Register Your Shop</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-
 <body>
 
-<div class="container">
-  <h2>Shop Registration</h2>
+<div class="auth-page" style="align-items:flex-start; padding-top:2rem; padding-bottom:2rem;">
+  <div class="auth-card" style="max-width:520px;">
 
-<input id="name" placeholder="Shop Name">
-<input id="phone" placeholder="Phone Number">
-<input id="email" placeholder="Email (optional)">
-<input id="password" type="password" placeholder="Password">
+    <div class="auth-logo">
+      <a href="index.html" style="text-decoration:none;">
+        <h1 class="font-outfit">🔧 FixBit</h1>
+      </a>
+      <p>Register your repair shop</p>
+    </div>
 
-  <p>📍 Select Shop Location</p>
-  <button onclick="getLiveLocation()">Use Live Location</button>
+    <div class="grid grid-cols-2 gap-3 mb-2">
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Shop Name <span style="color:#dc2626">*</span></label>
+        <input class="form-input" id="name" type="text" placeholder="Shop name"/>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Phone <span style="color:#dc2626">*</span></label>
+        <input class="form-input" id="phone" type="tel" placeholder="+91 ..."/>
+      </div>
+    </div>
 
-  <div id="map" style="height:250px;"></div>
+    <div class="form-group mt-3">
+      <label class="form-label">Email <span style="color:var(--slate-300); font-weight:400">(optional)</span></label>
+      <input class="form-input" id="email" type="email" placeholder="shop@email.com"/>
+    </div>
 
-  <button onclick="registerShop()">Register Shop</button>
+    <div class="form-group">
+      <label class="form-label">Password <span style="color:#dc2626">*</span></label>
+      <input class="form-input" id="password" type="password" placeholder="Min 6 characters"/>
+    </div>
+
+    <!-- Location -->
+    <div class="form-group">
+      <label class="form-label">📍 Shop Location</label>
+      <div style="background:var(--slate-50); border:1.5px solid var(--slate-200); border-radius:12px; padding:1rem;">
+        <p style="font-size:.82rem; color:var(--slate-500); margin-bottom:.75rem;">
+          Click the map to pin your exact location, or use your live GPS location.
+        </p>
+        <button type="button" onclick="getLiveLocation()" class="btn btn-secondary btn-sm mb-3" id="liveLocBtn">
+          📡 Use Live Location
+        </button>
+
+        <div id="map"></div>
+
+        <div id="locationInfo" style="display:none; margin-top:.75rem; font-size:.8rem; color:var(--teal-700); background:var(--teal-50); padding:.5rem .75rem; border-radius:8px; border:1px solid var(--teal-200,#99f6e4);">
+          ✅ Location selected: <span id="coordsText"></span>
+        </div>
+      </div>
+    </div>
+
+    <div id="errMsg" style="display:none; background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:.65rem .9rem; font-size:.82rem; color:#dc2626; margin-bottom:1rem;"></div>
+
+    <button class="btn btn-primary btn-full btn-lg" id="regBtn" onclick="registerShop()">
+      Register Shop →
+    </button>
+
+    <div class="auth-divider">already registered?</div>
+    <a href="login.html" class="btn btn-outline btn-full" style="justify-content:center;">Log In</a>
+  </div>
 </div>
+
+<div class="toast-container" id="toastContainer"></div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="script.js"></script>
-
 </body>
 </html>

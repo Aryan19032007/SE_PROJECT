@@ -1,47 +1,74 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-  <title>Login</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FixBit — Login</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-
 <body>
 
-<div class="container">
-  <h2>FixBit Login</h2>
+<div class="auth-page">
+  <div class="auth-card" style="max-width:420px;">
 
-  <input id="email" placeholder="Phone or Email">
-  <input type="password" id="password" placeholder="Password">
+    <!-- Logo -->
+    <div class="auth-logo">
+      <a href="index.html" style="text-decoration:none;">
+        <h1 class="font-outfit">🔧 FixBit</h1>
+      </a>
+      <p>Log in to your account to continue</p>
+    </div>
 
-  <button onclick="login()">Login</button>
+    <!-- Form -->
+    <div id="loginForm">
+      <div class="form-group">
+        <label class="form-label">Phone or Email</label>
+        <div class="input-icon-wrap">
+          <span class="icon">📧</span>
+          <input class="form-input" id="email" type="text" placeholder="Enter phone or email"/>
+        </div>
+      </div>
 
-  <!-- REGISTER OPTION -->
-  <p style="margin-top:15px;">Don't have an account?</p>
-  <button onclick="showRegisterOptions()">Register</button>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="input-icon-wrap">
+          <span class="icon">🔒</span>
+          <input class="form-input" id="password" type="password" placeholder="Enter your password"/>
+        </div>
+      </div>
 
-  <div id="registerOptions" style="display:none; margin-top:10px;">
-    <button onclick="goUser()">👤 Register as User</button>
-    <button onclick="goShop()">🏪 Register as Shop</button>
+      <!-- Error msg -->
+      <div id="errorMsg" style="display:none; background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:.65rem .9rem; font-size:.82rem; color:#dc2626; margin-bottom:1rem;">
+        ❌ Invalid email/phone or password. Please try again.
+      </div>
+
+      <button class="btn btn-primary btn-full btn-lg" onclick="login()" id="loginBtn">
+        Login →
+      </button>
+    </div>
+
+    <div class="auth-divider">or</div>
+
+    <p class="text-center text-sm text-slate-500 mb-3">Don't have an account?</p>
+    <div class="grid grid-cols-2 gap-3">
+      <a href="user-register.html" class="btn btn-secondary" style="justify-content:center;">
+        👤 User
+      </a>
+      <a href="shop-register.html" class="btn btn-secondary" style="justify-content:center;">
+        🏪 Shop
+      </a>
+    </div>
+
+    <p class="text-center mt-4" style="font-size:.78rem; color:var(--slate-300);">
+      <a href="index.html" style="color:var(--teal-600); text-decoration:none;">← Back to Home</a>
+    </p>
   </div>
-
 </div>
 
+<!-- Toast -->
+<div class="toast-container" id="toastContainer"></div>
+
 <script src="script.js"></script>
-
-<script>
-function showRegisterOptions() {
-  document.getElementById("registerOptions").style.display = "block";
-}
-
-function goUser() {
-  window.location.href = "user-register.html";
-}
-
-function goShop() {
-  window.location.href = "shop-register.html";
-}
-</script>
-
 </body>
 </html>
