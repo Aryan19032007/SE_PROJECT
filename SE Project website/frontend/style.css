@@ -670,3 +670,8 @@ h1, h2, h3, h4, h5 {
   animation: float 2s ease-in-out infinite;
   z-index: 2;
 }
+#map {
+  height: 300px;
+  width: 100%;
+  border-radius: 12px;
+}

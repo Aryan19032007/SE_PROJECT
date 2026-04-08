@@ -26,10 +26,10 @@
     <nav>
       <button class="nav-item active" onclick="showTab('requests', this)">
         <span class="nav-icon">📋</span> Repair Requests
-        <span id="reqCountBadge" style="margin-left:auto; background:var(--teal-500); color:white; border-radius:999px; font-size:.68rem; padding:.1rem .45rem; font-weight:700;">0</span>
+        <span id="reqCountBadge" style="margin-left:auto;background:var(--teal-500);color:white;border-radius:999px;font-size:.68rem;padding:.1rem .45rem;font-weight:700;">0</span>
       </button>
       <button class="nav-item" onclick="showTab('sent', this)">
-        <span class="nav-icon">📤</span> Sent Quotes
+        <span class="nav-icon">📤</span> My Quotes
       </button>
     </nav>
 
@@ -40,17 +40,15 @@
     </div>
   </aside>
 
-  <!-- Mobile overlay -->
   <div class="sidebar-overlay" id="sidebarOverlay" style="display:none;" onclick="closeSidebar()"></div>
 
   <!-- ===== MAIN ===== -->
   <main class="dash-main">
 
-    <!-- Top Bar -->
     <div class="dash-topbar">
       <div>
         <h2 class="font-outfit">Shop Dashboard</h2>
-        <div class="sub" id="topbarSub">Requests from customers near you</div>
+        <div class="sub" id="topbarGreeting">Requests from customers near you</div>
       </div>
       <div class="flex items-center gap-3">
         <button onclick="loadRequests()" class="btn btn-secondary btn-sm">🔄 Refresh</button>
@@ -60,9 +58,8 @@
 
     <div class="dash-content">
 
-      <!-- ===== TAB: REQUESTS ===== -->
+      <!-- ===== TAB: NEARBY REQUESTS ===== -->
       <div id="tab-requests">
-        <!-- Stats row -->
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
           <div class="stat-card">
             <div class="stat-icon" style="background:#e0fdf4">📋</div>
@@ -77,17 +74,13 @@
           <div class="stat-card sm:block hidden">
             <div class="stat-icon" style="background:#fef9c3">📍</div>
             <div class="stat-num" id="statRadius">—</div>
-            <div class="stat-label">Users' Avg Radius</div>
+            <div class="stat-label">Avg User Radius</div>
           </div>
         </div>
 
         <div class="flex items-center justify-between mb-4">
-          <h3 class="font-outfit text-base font-bold text-slate-700">
-            Repair Requests Near Your Shop
-          </h3>
-          <span style="font-size:.78rem; color:var(--slate-400);">
-            Only showing requests where your shop is within their selected radius
-          </span>
+          <h3 class="font-outfit text-base font-bold text-slate-700">Nearby Repair Requests</h3>
+          <span style="font-size:.78rem;color:var(--slate-400);">Only showing requests where your shop is within their radius</span>
         </div>
 
         <div id="requests"></div>
@@ -96,7 +89,12 @@
       <!-- ===== TAB: SENT QUOTES ===== -->
       <div id="tab-sent" style="display:none;">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="font-outfit text-base font-bold text-slate-700">Quotes You've Sent</h3>
+          <div>
+            <h3 class="font-outfit text-base font-bold text-slate-700">My Sent Quotes</h3>
+            <p style="font-size:.8rem;color:var(--slate-400);margin-top:.2rem;">
+              Accepted jobs show status controls — update to keep the customer informed.
+            </p>
+          </div>
           <button onclick="loadSentQuotes()" class="btn btn-secondary btn-sm">🔄 Refresh</button>
         </div>
         <div id="sentQuotes"></div>
@@ -106,19 +104,10 @@
   </main>
 </div>
 
-<!-- Toast -->
 <div class="toast-container" id="toastContainer"></div>
 
 <script src="script.js"></script>
 <script>
-function showTab(name, btn) {
-  document.querySelectorAll('[id^="tab-"]').forEach(t => t.style.display = 'none');
-  document.getElementById('tab-' + name).style.display = 'block';
-  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  if (name === 'sent') loadSentQuotes();
-}
-
 function toggleSidebar() {
   document.getElementById('sidebar').classList.toggle('open');
   document.getElementById('sidebarOverlay').style.display =
@@ -128,16 +117,14 @@ function closeSidebar() {
   document.getElementById('sidebar').classList.remove('open');
   document.getElementById('sidebarOverlay').style.display = 'none';
 }
-
-if (window.innerWidth < 768) {
-  document.getElementById('hamburgerBtn').style.display = 'flex';
-}
-
 function logout() {
   if (confirm('Log out of FixBit?')) {
     localStorage.removeItem('user');
     window.location.href = 'index.html';
   }
+}
+if (window.innerWidth < 768) {
+  document.getElementById('hamburgerBtn').style.display = 'flex';
 }
 </script>
 </body>

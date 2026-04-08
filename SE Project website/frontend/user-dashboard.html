@@ -28,8 +28,8 @@
         <span class="nav-icon">📤</span> New Request
       </button>
       <button class="nav-item" onclick="showTab('myResponses', this)">
-        <span class="nav-icon">💬</span> Shop Responses
-        <span id="responseBadge" style="margin-left:auto; background:var(--orange-500); color:white; border-radius:999px; font-size:.68rem; padding:.1rem .45rem; font-weight:700; display:none"></span>
+        <span class="nav-icon">💬</span> Shop Quotes
+        <span id="responseBadge" style="margin-left:auto; background:var(--orange-500); color:white; border-radius:999px; font-size:.68rem; padding:.1rem .45rem; font-weight:700; display:none;"></span>
       </button>
     </nav>
 
@@ -40,28 +40,24 @@
     </div>
   </aside>
 
-  <!-- Overlay for mobile -->
   <div class="sidebar-overlay" id="sidebarOverlay" style="display:none;" onclick="closeSidebar()"></div>
 
   <!-- ===== MAIN ===== -->
   <main class="dash-main">
 
-    <!-- Top Bar -->
     <div class="dash-topbar">
       <div>
         <h2 class="font-outfit">User Dashboard</h2>
         <div class="sub" id="topbarGreeting">Welcome back!</div>
       </div>
-      <div class="flex items-center gap-3">
-        <!-- Hamburger for mobile -->
-        <button onclick="toggleSidebar()" class="btn btn-outline btn-sm" style="display:none" id="hamburgerBtn">☰</button>
-      </div>
+      <button onclick="toggleSidebar()" class="btn btn-outline btn-sm" style="display:none" id="hamburgerBtn">☰</button>
     </div>
 
     <div class="dash-content">
 
       <!-- ===== TAB: NEW REQUEST ===== -->
       <div id="tab-newRequest">
+        <!-- Stats -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           <div class="stat-card">
             <div class="stat-icon" style="background:#e0fdf4">📤</div>
@@ -76,7 +72,7 @@
           <div class="stat-card">
             <div class="stat-icon" style="background:#fef9c3">💰</div>
             <div class="stat-num" id="statBestPrice">—</div>
-            <div class="stat-label">Best Quote (₹)</div>
+            <div class="stat-label">Best Quote</div>
           </div>
         </div>
 
@@ -88,15 +84,9 @@
               <label class="form-label">Brand</label>
               <select class="form-select" id="brand">
                 <option value="">Select Brand</option>
-                <option>Apple</option>
-                <option>Samsung</option>
-                <option>Redmi</option>
-                <option>Realme</option>
-                <option>OnePlus</option>
-                <option>Oppo</option>
-                <option>Vivo</option>
-                <option>Poco</option>
-                <option>Motorola</option>
+                <option>Apple</option><option>Samsung</option><option>Redmi</option>
+                <option>Realme</option><option>OnePlus</option><option>Oppo</option>
+                <option>Vivo</option><option>Poco</option><option>Motorola</option>
                 <option>Other</option>
               </select>
             </div>
@@ -110,39 +100,34 @@
             <label class="form-label">Issue Type</label>
             <select class="form-select" id="issue">
               <option value="">Select Issue</option>
-              <option>Screen Damage</option>
-              <option>Battery Issue</option>
-              <option>Charging Problem</option>
-              <option>Camera Problem</option>
-              <option>Speaker/Mic Issue</option>
-              <option>Water Damage</option>
-              <option>Software Issue</option>
-              <option>Back Glass Damage</option>
+              <option>Screen Damage</option><option>Battery Issue</option>
+              <option>Charging Problem</option><option>Camera Problem</option>
+              <option>Speaker/Mic Issue</option><option>Water Damage</option>
+              <option>Software Issue</option><option>Back Glass Damage</option>
               <option>Other</option>
             </select>
           </div>
 
           <div class="form-group">
             <label class="form-label">Description</label>
-            <textarea class="form-textarea" id="desc" placeholder="Describe the problem in detail..."></textarea>
+            <textarea class="form-textarea" id="desc" placeholder="Describe the problem in detail…"></textarea>
           </div>
 
           <div class="form-group">
-            <label class="form-label">Photo of Damage <span style="color:var(--slate-300); font-weight:400">(optional)</span></label>
+            <label class="form-label">Photo <span style="color:var(--slate-300);font-weight:400">(optional)</span></label>
             <div class="file-upload-area" id="fileArea">
               <input type="file" id="image" accept="image/*" onchange="previewImage(event)"/>
               <span class="icon">📷</span>
               <p>Click or drag to upload a photo</p>
-              <p style="font-size:.72rem; margin-top:.2rem; color:var(--slate-300)">JPG, PNG up to 5MB</p>
+              <p style="font-size:.72rem;margin-top:.2rem;color:var(--slate-300)">JPG, PNG up to 5MB</p>
             </div>
             <img id="imgPreview" class="img-preview" alt="Preview"/>
           </div>
 
-          <!-- RADIUS SELECTOR -->
           <div class="form-group">
             <label class="form-label">📍 Search Radius</label>
-            <p style="font-size:.8rem; color:var(--slate-400); margin-bottom:.6rem;">
-              Send your request to shops within this distance from your current location.
+            <p style="font-size:.8rem;color:var(--slate-400);margin-bottom:.6rem;">
+              Shops within this distance will see your request.
             </p>
             <div class="radius-selector">
               <button type="button" class="radius-btn" onclick="selectRadius(5, this)">📍 5 km</button>
@@ -150,12 +135,12 @@
               <button type="button" class="radius-btn" onclick="selectRadius(20, this)">📍 20 km</button>
               <button type="button" class="radius-btn" onclick="selectRadius(40, this)">📍 40 km</button>
             </div>
-            <div id="locationStatus" style="margin-top:.6rem; font-size:.78rem; color:var(--slate-400);">
-              🔄 Detecting your location...
+            <div id="locationStatus" style="margin-top:.6rem;font-size:.78rem;color:var(--slate-400);">
+              🔄 Detecting your location…
             </div>
           </div>
 
-          <div id="submitErr" style="display:none; background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:.65rem .9rem; font-size:.82rem; color:#dc2626; margin-bottom:1rem;"></div>
+          <div id="submitErr" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:.65rem .9rem;font-size:.82rem;color:#dc2626;margin-bottom:1rem;"></div>
 
           <button class="btn btn-primary btn-full btn-lg" onclick="submitRequest()" id="submitBtn">
             🚀 Submit Repair Request
@@ -166,47 +151,25 @@
       <!-- ===== TAB: MY RESPONSES ===== -->
       <div id="tab-myResponses" style="display:none;">
         <div class="flex items-center justify-between mb-5">
-          <h3 class="font-outfit text-lg font-bold text-slate-800">Quotes from Shops</h3>
+          <div>
+            <h3 class="font-outfit text-lg font-bold text-slate-800">Quotes from Shops</h3>
+            <p style="font-size:.8rem;color:var(--slate-400);margin-top:.2rem;">
+              Accept a quote to reveal the shop's phone number and start chatting.
+            </p>
+          </div>
           <button onclick="loadUserResponses()" class="btn btn-secondary btn-sm">🔄 Refresh</button>
         </div>
         <div id="responses"></div>
       </div>
 
-    </div><!-- /dash-content -->
+    </div>
   </main>
 </div>
 
-<!-- Toast -->
 <div class="toast-container" id="toastContainer"></div>
 
 <script src="script.js"></script>
 <script>
-// Tab switching
-function showTab(name, btn) {
-  document.querySelectorAll('[id^="tab-"]').forEach(t => t.style.display = 'none');
-  document.getElementById('tab-' + name).style.display = 'block';
-  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  if (name === 'myResponses') loadUserResponses();
-}
-
-// Mobile sidebar
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').style.display = 
-    document.getElementById('sidebar').classList.contains('open') ? 'block' : 'none';
-}
-function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebarOverlay').style.display = 'none';
-}
-
-// Show hamburger on mobile
-if (window.innerWidth < 768) {
-  document.getElementById('hamburgerBtn').style.display = 'flex';
-}
-
-// Image preview
 function previewImage(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -219,13 +182,23 @@ function previewImage(e) {
   };
   reader.readAsDataURL(file);
 }
-
-// Logout
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').style.display =
+    document.getElementById('sidebar').classList.contains('open') ? 'block' : 'none';
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').style.display = 'none';
+}
 function logout() {
   if (confirm('Log out of FixBit?')) {
     localStorage.removeItem('user');
     window.location.href = 'index.html';
   }
+}
+if (window.innerWidth < 768) {
+  document.getElementById('hamburgerBtn').style.display = 'flex';
 }
 </script>
 </body>
