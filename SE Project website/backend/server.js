@@ -1,166 +1,174 @@
+require("dotenv").config();
 const express = require("express");
 const mysql = require("mysql2");
 const cors = require("cors");
 const multer = require("multer");
-const bodyParser = require("body-parser");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const rateLimit = require("express-rate-limit");
 const path = require("path");
 
 const app = express();
 
-// MIDDLEWARE
+// Middleware
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// SERVE UPLOADED IMAGES
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+// Rate limit
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100
+}));
 
-// DATABASE CONNECTION
+// DB connection
 const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "password",   // 🔴 change if needed
-  database: "fixbit"
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
 });
 
 db.connect(err => {
-  if (err) {
-    console.error("DB Error:", err);
-    return;
-  }
+  if (err) throw err;
   console.log("MySQL Connected...");
 });
 
-// ================= IMAGE UPLOAD =================
+// Auth middleware
+function auth(req, res, next) {
+  const token = req.headers.authorization;
+  if (!token) return res.status(401).json({ success: false, message: "No token" });
 
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch {
+    return res.status(401).json({ success: false, message: "Invalid token" });
+  }
+}
+
+// Multer setup
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "../uploads"));
-  },
+  destination: path.join(__dirname, "uploads"),
   filename: (req, file, cb) => {
     cb(null, Date.now() + "-" + file.originalname);
   }
 });
 
-const upload = multer({ storage });
-
-// ================= ROUTES =================
-
-// ROOT CHECK
-app.get("/", (req, res) => {
-  res.send("FixBit Backend Running 🚀");
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) cb(null, true);
+    else cb(new Error("Only images allowed"), false);
+  }
 });
 
-// ================= REGISTER =================
-app.post("/register", (req, res) => {
-const { name, email, phone, password, role, latitude, longitude } = req.body;
+// REGISTER
+app.post("/register", async (req, res) => {
+  const { name, email, phone, password, role, latitude, longitude } = req.body;
 
-const sql = `
-INSERT INTO users (name, email, phone, password, role, latitude, longitude)
-VALUES (?, ?, ?, ?, ?, ?, ?)
-`;
-  
-  db.query(sql, [name, email, password, role], (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send("Registration failed");
+  if (!phone || !password)
+    return res.json({ success: false, message: "Phone & password required" });
+
+  const hashed = await bcrypt.hash(password, 10);
+
+  db.query(
+    "INSERT INTO users (name, email, phone, password, role, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    [name, email, phone, hashed, role, latitude, longitude],
+    (err) => {
+      if (err) return res.json({ success: false, message: err.message });
+      res.json({ success: true, message: "Registered" });
     }
-    res.send("Registered Successfully");
-  });
+  );
 });
 
-// ================= LOGIN =================
+// LOGIN
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
 
-  const sql = `
-    SELECT * FROM users
-    WHERE (email = ? OR phone = ?) AND password = ?
-  `;
+  db.query(
+    "SELECT * FROM users WHERE (email=? OR phone=?)",
+    [email, email],
+    async (err, result) => {
+      if (err) return res.json({ success: false });
 
-  db.query(sql, [email, email, password], (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send("Login error");
-    }
+      if (result.length === 0)
+        return res.json({ success: false, message: "User not found" });
 
-    if (result.length > 0) {
-      res.json(result[0]);
-    } else {
-      res.json({ message: "Invalid login" });
+      const user = result[0];
+      const match = await bcrypt.compare(password, user.password);
+
+      if (!match)
+        return res.json({ success: false, message: "Wrong password" });
+
+      const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET);
+
+      res.json({ success: true, user, token });
     }
+  );
+});
+
+// SUBMIT REQUEST
+app.post("/request", auth, upload.single("image"), (req, res) => {
+  const { description, latitude, longitude } = req.body;
+  const image = req.file.filename;
+
+  db.query(
+    "INSERT INTO requests (user_id, description, image, latitude, longitude) VALUES (?, ?, ?, ?, ?)",
+    [req.user.id, description, image, latitude, longitude],
+    () => res.json({ success: true })
+  );
+});
+
+// GET REQUESTS (SHOP)
+app.get("/requests/:shop_id", auth, (req, res) => {
+  const shop_id = req.params.shop_id;
+
+  db.query("SELECT latitude, longitude FROM users WHERE id=?", [shop_id], (err, shop) => {
+    const lat = shop[0].latitude;
+    const lng = shop[0].longitude;
+
+    const sql = `
+      SELECT *, (
+        6371 * acos(
+          cos(radians(?)) *
+          cos(radians(latitude)) *
+          cos(radians(longitude) - radians(?)) +
+          sin(radians(?)) *
+          sin(radians(latitude))
+        )
+      ) AS distance
+      FROM requests
+      HAVING distance <= 20
+      ORDER BY distance ASC
+    `;
+
+    db.query(sql, [lat, lng, lat], (err, result) => res.json(result));
   });
 });
 
-// ================= SUBMIT REQUEST =================
-app.post("/request", upload.single("image"), (req, res) => {
-  const { user_id, description, latitude, longitude } = req.body;
-  const image = req.file ? req.file.filename : null;
+// SEND RESPONSE
+app.post("/response", auth, (req, res) => {
+  const { request_id, price } = req.body;
 
-  const sql = `
-    INSERT INTO requests (user_id, description, image, latitude, longitude)
-    VALUES (?, ?, ?, ?, ?)
-  `;
-
-  db.query(sql, [user_id, description, image, latitude, longitude], (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send("Error saving request");
-    }
-    res.send("Request Saved Successfully");
-  });
+  db.query(
+    "INSERT INTO responses (request_id, shop_id, price) VALUES (?, ?, ?)",
+    [request_id, req.user.id, price],
+    () => res.json({ success: true })
+  );
 });
 
-// ================= GET ALL REQUESTS =================
-app.get("/requests", (req, res) => {
-  const sql = "SELECT * FROM requests ORDER BY created_at DESC";
+// ACCEPT OFFER
+app.post("/accept", auth, (req, res) => {
+  const { response_id } = req.body;
 
-  db.query(sql, (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send("Error fetching requests");
-    }
-    res.json(result);
-  });
+  db.query("UPDATE responses SET accepted=1 WHERE id=?", [response_id], () =>
+    res.json({ success: true })
+  );
 });
 
-// ================= SEND RESPONSE =================
-app.post("/response", (req, res) => {
-  const { request_id, shop_id, price, message } = req.body;
-
-  const sql = `
-    INSERT INTO responses (request_id, shop_id, price, message)
-    VALUES (?, ?, ?, ?)
-  `;
-
-  db.query(sql, [request_id, shop_id, price, message], (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send("Error sending response");
-    }
-    res.send("Response Sent Successfully");
-  });
-});
-
-// ================= START SERVER =================
-app.listen(3000, () => {
-  console.log("Server running on http://localhost:3000");
-});
-app.get("/user-responses/:user_id", (req, res) => {
-  const user_id = req.params.user_id;
-
-  const sql = `
-    SELECT responses.*, requests.description, requests.image
-    FROM responses
-    JOIN requests ON responses.request_id = requests.id
-    WHERE requests.user_id = ?
-    ORDER BY responses.id DESC
-  `;
-
-  db.query(sql, [user_id], (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send("Error fetching responses");
-    }
-    res.json(result);
-  });
+// START SERVER
+app.listen(process.env.PORT, () => {
+  console.log("Server running...");
 });

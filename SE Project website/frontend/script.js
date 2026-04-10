@@ -1,163 +1,67 @@
-const API = "http://localhost:3000";
+/* ================================================================
+   FixBit v2 — script.js (JWT READY VERSION)
+   ================================================================ */
 
-// ================= USER REGISTER =================
-async function registerUser() {
-  let name = document.getElementById("name").value.trim();
-  let phone = document.getElementById("phone").value.trim();
-  let email = document.getElementById("email").value.trim();
-  let password = document.getElementById("password").value.trim();
+const API = (typeof window.API_BASE !== 'undefined')
+  ? window.API_BASE
+  : 'http://localhost:3000';
 
-  if (!phone || !password) {
-    alert("Phone and Password required");
-    return;
-  }
-
-  await fetch(API + "/register", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      name,
-      phone,
-      email,
-      password,
-      role: "user"
-    })
-  });
-
-  alert("User Registered!");
-  window.location.href = "login.html";
+function getToken() {
+  return localStorage.getItem("token");
 }
 
-// ================= SHOP REGISTER =================
-let map;
-let marker;
-let selectedLat = null;
-let selectedLng = null;
-
-function initMap() {
-  map = L.map('map').setView([26.75, 83.36], 13);
-
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
-  }).addTo(map);
-
-  // click to select location
-  map.on('click', function (e) {
-    selectedLat = e.latlng.lat;
-    selectedLng = e.latlng.lng;
-
-    if (marker) {
-      marker.setLatLng(e.latlng);
-    } else {
-      marker = L.marker(e.latlng).addTo(map);
-    }
-  });
+function getStoredUser() {
+  try { return JSON.parse(localStorage.getItem('user')); } catch { return null; }
 }
 
-// 📍 LIVE LOCATION BUTTON
-function getLiveLocation() {
-  navigator.geolocation.getCurrentPosition((pos) => {
-    selectedLat = pos.coords.latitude;
-    selectedLng = pos.coords.longitude;
-
-    map.setView([selectedLat, selectedLng], 15);
-
-    if (marker) {
-      marker.setLatLng([selectedLat, selectedLng]);
-    } else {
-      marker = L.marker([selectedLat, selectedLng]).addTo(map);
-    }
-  });
-}
-
-// 🏪 FINAL SHOP REGISTER
-async function registerShop() {
-  let name = document.getElementById("name").value.trim();
-  let phone = document.getElementById("phone").value.trim();
-  let email = document.getElementById("email").value.trim();
-  let password = document.getElementById("password").value.trim();
-
-  if (!phone || !password) {
-    alert("Phone and Password required");
-    return;
-  }
-
-  if (!selectedLat || !selectedLng) {
-    alert("Select location on map");
-    return;
-  }
-
-  await fetch(API + "/register", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      name,
-      phone,
-      email,
-      password,
-      role: "shop",
-      latitude: selectedLat,
-      longitude: selectedLng
-    })
-  });
-
-  alert("Shop Registered!");
-  window.location.href = "login.html";
-}
-
-// ================= LOGIN =================
+/* ================= LOGIN ================= */
 async function login() {
-  let email = document.getElementById("email").value.trim();
-  let password = document.getElementById("password").value.trim();
+  const emailVal = document.getElementById('email')?.value.trim();
+  const password = document.getElementById('password')?.value;
 
-  let res = await fetch(API + "/login", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ email, password })
+  const res = await fetch(API + '/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: emailVal, password })
   });
 
-  let data = await res.json();
+  const json = await res.json();
 
-  if (data.message === "Invalid login") {
-    alert("Invalid Email or Password ❌");
+  if (!json.success) {
+    alert(json.message);
     return;
   }
 
-  localStorage.setItem("user", JSON.stringify(data));
+  // ✅ IMPORTANT CHANGES
+  localStorage.setItem('user', JSON.stringify(json.user));
+  localStorage.setItem('token', json.token);
 
-  if (data.role === "user") {
+  if (json.user.role === "user") {
     window.location.href = "user-dashboard.html";
   } else {
     window.location.href = "shop-dashboard.html";
   }
 }
 
-// ================= USER REQUEST =================
+/* ================= SUBMIT REQUEST ================= */
 async function submitRequest() {
-  let desc = document.getElementById("desc").value;
-  let image = document.getElementById("image").files[0];
-
-  let user = JSON.parse(localStorage.getItem("user"));
+  const desc = document.getElementById("desc").value;
+  const image = document.getElementById("image").files[0];
+  const user = getStoredUser();
 
   navigator.geolocation.getCurrentPosition(async (pos) => {
-    let lat = pos.coords.latitude;
-    let lng = pos.coords.longitude;
-
-    let formData = new FormData();
+    const formData = new FormData();
     formData.append("description", desc);
     formData.append("image", image);
     formData.append("user_id", user.id);
-    formData.append("latitude", lat);
-    formData.append("longitude", lng);
+    formData.append("latitude", pos.coords.latitude);
+    formData.append("longitude", pos.coords.longitude);
 
     await fetch(API + "/request", {
       method: "POST",
+      headers: {
+        "Authorization": getToken()   // ✅ JWT added
+      },
       body: formData
     });
 
@@ -165,93 +69,183 @@ async function submitRequest() {
   });
 }
 
-// ================= SHOP LOAD REQUESTS =================
+/* ================= LOAD REQUESTS (SHOP) ================= */
 async function loadRequests() {
-  let res = await fetch(API + "/requests");
-  let data = await res.json();
+  const user = getStoredUser();
 
-  let div = document.getElementById("requests");
-  if (!div) return;
+  const res = await fetch(API + "/requests/" + user.id, {
+    headers: {
+      "Authorization": getToken()
+    }
+  });
 
+  const data = await res.json();
+
+  const div = document.getElementById("requests");
   div.innerHTML = "";
-
-  if (data.length === 0) {
-    div.innerHTML = "<p>No requests available</p>";
-    return;
-  }
 
   data.forEach(req => {
     div.innerHTML += `
-      <div style="border:1px solid #ccc; padding:10px; margin:10px;">
-        <p><b>Problem:</b> ${req.description}</p>
-        <img src="${API}/uploads/${req.image}" width="120"/>
-        <br><br>
-        <input placeholder="Enter price" id="price-${req.id}">
+      <div class="card">
+        <p>${req.description}</p>
+        <img src="${API}/uploads/${req.image}" width="100"/>
+
+        <input id="price-${req.id}" placeholder="Enter price">
         <button onclick="sendResponse(${req.id})">Send</button>
       </div>
     `;
   });
 }
 
-// ================= SEND RESPONSE =================
+/* ================= SEND RESPONSE ================= */
 async function sendResponse(request_id) {
-  let price = document.getElementById("price-" + request_id).value;
-  let user = JSON.parse(localStorage.getItem("user"));
+  const price = document.getElementById("price-" + request_id).value;
 
   await fetch(API + "/response", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": getToken()   // ✅ JWT added
+    },
     body: JSON.stringify({
       request_id,
-      shop_id: user.id,
-      price,
-      message: "Repair available"
+      price
     })
   });
 
   alert("Response Sent!");
 }
 
-// ================= USER SEE RESPONSES =================
+/* ================= LOAD USER RESPONSES ================= */
 async function loadUserResponses() {
-  let user = JSON.parse(localStorage.getItem("user"));
+  const user = getStoredUser();
 
-  let res = await fetch(API + "/user-responses/" + user.id);
-  let data = await res.json();
+  const res = await fetch(API + "/user-responses/" + user.id, {
+    headers: {
+      "Authorization": getToken()
+    }
+  });
 
-  let div = document.getElementById("responses");
-  if (!div) return;
+  const data = await res.json();
 
+  const div = document.getElementById("responses");
   div.innerHTML = "";
-
-  if (data.length === 0) {
-    div.innerHTML = "<p>No responses yet</p>";
-    return;
-  }
 
   data.forEach(r => {
     div.innerHTML += `
-      <div style="border:1px solid #ccc; padding:10px; margin:10px;">
-        <p><b>Problem:</b> ${r.description}</p>
-        <img src="${API}/uploads/${r.image}" width="100"/>
-        <p><b>Price:</b> ₹${r.price}</p>
+      <div class="card">
+        <p>${r.description}</p>
+        <p>₹${r.price}</p>
+
+        <button onclick="acceptOffer(${r.request_id}, ${r.shop_id})">
+          Accept
+        </button>
       </div>
     `;
   });
 }
 
-// ================= AUTO LOAD =================
+/* ================= ACCEPT OFFER ================= */
+async function acceptOffer(request_id, shop_id) {
+  await fetch(API + "/accept", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": getToken()   // ✅ JWT added
+    },
+    body: JSON.stringify({
+      request_id,
+      shop_id
+    })
+  });
+
+  alert("Offer Accepted!");
+}
+
+/* ================= UPDATE STATUS ================= */
+async function updateStatus(request_id, status) {
+  await fetch(API + "/request/" + request_id + "/status", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": getToken()   // ✅ JWT added
+    },
+    body: JSON.stringify({ status })
+  });
+
+  alert("Status updated");
+}
+
+/* ================= SUBMIT REVIEW ================= */
+async function submitReview(request_id, shop_id) {
+  const rating = 5;
+
+  await fetch(API + "/review", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": getToken()   // ✅ JWT added
+    },
+    body: JSON.stringify({
+      request_id,
+      shop_id,
+      rating
+    })
+  });
+
+  alert("Review submitted");
+}
+/* ================= MAP ================= */
+
+let map;
+let marker;
+
+function initMap() {
+  if (!document.getElementById("map")) return;
+
+  map = L.map('map').setView([26.75, 83.36], 13);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  map.on('click', function (e) {
+    placeMarker(e.latlng.lat, e.latlng.lng);
+  });
+
+  // 🔥 IMPORTANT FIX (your question)
+  setTimeout(() => {
+    map.invalidateSize();
+  }, 300);
+}
+
+function placeMarker(lat, lng) {
+  if (marker) {
+    marker.setLatLng([lat, lng]);
+  } else {
+    marker = L.marker([lat, lng]).addTo(map);
+  }
+
+  // optional (for backend use later)
+  window.selectedLat = lat;
+  window.selectedLng = lng;
+}
+
+function getLiveLocation() {
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      let lat = pos.coords.latitude;
+      let lng = pos.coords.longitude;
+
+      map.setView([lat, lng], 15);
+      placeMarker(lat, lng);
+    },
+    () => alert("Location permission denied")
+  );
+}
+
 window.onload = function () {
-
-  if (window.location.href.includes("shop-register.html")) {
+  if (document.getElementById("map")) {
     initMap();
-  }
-
-  if (window.location.href.includes("shop-dashboard.html")) {
-    loadRequests();
-  }
-
-  if (window.location.href.includes("user-dashboard.html")) {
-    loadUserResponses();
   }
 };

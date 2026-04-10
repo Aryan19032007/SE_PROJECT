@@ -1,16 +1,131 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Shop Dashboard</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FixBit — Shop Dashboard</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
 
-<div class="container">
-  <h2>FixBit - Shop Dashboard</h2>
-  <div id="requests"></div>
+<div class="dash-layout">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">🔧 FixBit</div>
+
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebarInitial" style="background:linear-gradient(135deg,#f97316,#ea580c)">S</div>
+      <div class="sidebar-user-info">
+        <div class="name" id="sidebarName">Shop</div>
+        <div class="role" style="color:#fb923c">Shopkeeper</div>
+      </div>
+    </div>
+
+    <nav>
+      <button class="nav-item active" onclick="showTab('requests', this)">
+        <span class="nav-icon">📋</span> Repair Requests
+        <span id="reqCountBadge" style="margin-left:auto;background:var(--teal-500);color:white;border-radius:999px;font-size:.68rem;padding:.1rem .45rem;font-weight:700;">0</span>
+      </button>
+      <button class="nav-item" onclick="showTab('sent', this)">
+        <span class="nav-icon">📤</span> My Quotes
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="nav-item" onclick="logout()">
+        <span class="nav-icon">🚪</span> Log Out
+      </button>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" id="sidebarOverlay" style="display:none;" onclick="closeSidebar()"></div>
+
+  <!-- ===== MAIN ===== -->
+  <main class="dash-main">
+
+    <div class="dash-topbar">
+      <div>
+        <h2 class="font-outfit">Shop Dashboard</h2>
+        <div class="sub" id="topbarGreeting">Requests from customers near you</div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="loadRequests()" class="btn btn-secondary btn-sm">🔄 Refresh</button>
+        <button onclick="toggleSidebar()" class="btn btn-outline btn-sm" style="display:none" id="hamburgerBtn">☰</button>
+      </div>
+    </div>
+
+    <div class="dash-content">
+
+      <!-- ===== TAB: NEARBY REQUESTS ===== -->
+      <div id="tab-requests">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#e0fdf4">📋</div>
+            <div class="stat-num" id="statNearby">—</div>
+            <div class="stat-label">Nearby Requests</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#fff7ed">📤</div>
+            <div class="stat-num" id="statSent">—</div>
+            <div class="stat-label">Quotes Sent</div>
+          </div>
+          <div class="stat-card sm:block hidden">
+            <div class="stat-icon" style="background:#fef9c3">📍</div>
+            <div class="stat-num" id="statRadius">—</div>
+            <div class="stat-label">Avg User Radius</div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-outfit text-base font-bold text-slate-700">Nearby Repair Requests</h3>
+          <span style="font-size:.78rem;color:var(--slate-400);">Only showing requests where your shop is within their radius</span>
+        </div>
+
+        <div id="requests"></div>
+      </div>
+
+      <!-- ===== TAB: SENT QUOTES ===== -->
+      <div id="tab-sent" style="display:none;">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="font-outfit text-base font-bold text-slate-700">My Sent Quotes</h3>
+            <p style="font-size:.8rem;color:var(--slate-400);margin-top:.2rem;">
+              Accepted jobs show status controls — update to keep the customer informed.
+            </p>
+          </div>
+          <button onclick="loadSentQuotes()" class="btn btn-secondary btn-sm">🔄 Refresh</button>
+        </div>
+        <div id="sentQuotes"></div>
+      </div>
+
+    </div>
+  </main>
 </div>
 
+<div class="toast-container" id="toastContainer"></div>
+
 <script src="script.js"></script>
+<script>
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').style.display =
+    document.getElementById('sidebar').classList.contains('open') ? 'block' : 'none';
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').style.display = 'none';
+}
+function logout() {
+  if (confirm('Log out of FixBit?')) {
+    localStorage.removeItem('user');
+    window.location.href = 'index.html';
+  }
+}
+if (window.innerWidth < 768) {
+  document.getElementById('hamburgerBtn').style.display = 'flex';
+}
+</script>
 </body>
 </html>
