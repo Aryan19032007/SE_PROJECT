@@ -9,12 +9,24 @@
 </head>
 <body>
 
-<div class="dash-layout">
+<!-- Chat Modal -->
+<div id="chatModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; align-items:flex-end; justify-content:center;">
+  <div style="background:white; width:100%; max-width:500px; height:70vh; border-radius:20px 20px 0 0; display:flex; flex-direction:column;">
+    <div style="padding:1rem; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between;">
+      <h3 class="font-bold">Chat with Customer</h3>
+      <button onclick="closeChat()" style="font-size:1.5rem;">&times;</button>
+    </div>
+    <div id="chatMessages" style="flex:1; overflow-y:auto; padding:1rem;"></div>
+    <div style="padding:1rem; border-top:1px solid #e2e8f0; display:flex;">
+      <input id="chatInput" type="text" placeholder="Type a message..." style="flex:1; padding:.5rem; border:1px solid #cbd5e1; border-radius:8px;"/>
+      <button onclick="sendChatMessage()" style="margin-left:.5rem; background:#f97316; color:white; border:none; border-radius:8px; padding:.5rem 1rem;">Send</button>
+    </div>
+  </div>
+</div>
 
-  <!-- ===== SIDEBAR ===== -->
+<div class="dash-layout">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">🔧 FixBit</div>
-
     <div class="sidebar-user">
       <div class="sidebar-avatar" id="sidebarInitial" style="background:linear-gradient(135deg,#f97316,#ea580c)">S</div>
       <div class="sidebar-user-info">
@@ -22,110 +34,285 @@
         <div class="role" style="color:#fb923c">Shopkeeper</div>
       </div>
     </div>
-
     <nav>
-      <button class="nav-item active" onclick="showTab('requests', this)">
-        <span class="nav-icon">📋</span> Repair Requests
-        <span id="reqCountBadge" style="margin-left:auto;background:var(--teal-500);color:white;border-radius:999px;font-size:.68rem;padding:.1rem .45rem;font-weight:700;">0</span>
-      </button>
-      <button class="nav-item" onclick="showTab('sent', this)">
-        <span class="nav-icon">📤</span> My Quotes
-      </button>
+      <button class="nav-item active" onclick="showTab('nearby', this)">📋 Nearby Requests</button>
+      <button class="nav-item" onclick="showTab('quotes', this)">📤 My Quotes</button>
     </nav>
-
     <div class="sidebar-footer">
-      <button class="nav-item" onclick="logout()">
-        <span class="nav-icon">🚪</span> Log Out
-      </button>
+      <button class="nav-item" onclick="logout()">🚪 Log Out</button>
     </div>
   </aside>
 
   <div class="sidebar-overlay" id="sidebarOverlay" style="display:none;" onclick="closeSidebar()"></div>
 
-  <!-- ===== MAIN ===== -->
   <main class="dash-main">
-
     <div class="dash-topbar">
       <div>
         <h2 class="font-outfit">Shop Dashboard</h2>
-        <div class="sub" id="topbarGreeting">Requests from customers near you</div>
+        <div class="sub" id="topbarGreeting">Manage requests and quotes</div>
       </div>
-      <div class="flex items-center gap-3">
-        <button onclick="loadRequests()" class="btn btn-secondary btn-sm">🔄 Refresh</button>
-        <button onclick="toggleSidebar()" class="btn btn-outline btn-sm" style="display:none" id="hamburgerBtn">☰</button>
+      <div class="flex gap-2">
+        <button onclick="loadNearby()" class="btn btn-secondary btn-sm">🔄 Refresh</button>
+        <button onclick="toggleSidebar()" class="btn btn-outline btn-sm" id="hamburgerBtn" style="display:none;">☰</button>
       </div>
     </div>
 
     <div class="dash-content">
-
-      <!-- ===== TAB: NEARBY REQUESTS ===== -->
-      <div id="tab-requests">
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
-          <div class="stat-card">
-            <div class="stat-icon" style="background:#e0fdf4">📋</div>
-            <div class="stat-num" id="statNearby">—</div>
-            <div class="stat-label">Nearby Requests</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon" style="background:#fff7ed">📤</div>
-            <div class="stat-num" id="statSent">—</div>
-            <div class="stat-label">Quotes Sent</div>
-          </div>
-          <div class="stat-card sm:block hidden">
-            <div class="stat-icon" style="background:#fef9c3">📍</div>
-            <div class="stat-num" id="statRadius">—</div>
-            <div class="stat-label">Avg User Radius</div>
-          </div>
+      <!-- Nearby Requests Tab -->
+      <div id="tab-nearby">
+        <div id="locationWarning" class="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm" style="display:none;">
+          ⚠️ Location not set. <button onclick="updateShopLocation()" class="underline">Set location</button>
         </div>
-
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="font-outfit text-base font-bold text-slate-700">Nearby Repair Requests</h3>
-          <span style="font-size:.78rem;color:var(--slate-400);">Only showing requests where your shop is within their radius</span>
-        </div>
-
-        <div id="requests"></div>
+        <div id="nearbyList"></div>
       </div>
 
-      <!-- ===== TAB: SENT QUOTES ===== -->
-      <div id="tab-sent" style="display:none;">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h3 class="font-outfit text-base font-bold text-slate-700">My Sent Quotes</h3>
-            <p style="font-size:.8rem;color:var(--slate-400);margin-top:.2rem;">
-              Accepted jobs show status controls — update to keep the customer informed.
-            </p>
-          </div>
-          <button onclick="loadSentQuotes()" class="btn btn-secondary btn-sm">🔄 Refresh</button>
+      <!-- My Quotes Tab -->
+      <div id="tab-quotes" style="display:none;">
+        <div class="flex justify-between mb-4">
+          <h3 class="font-outfit text-lg">Sent Quotes & Accepted Jobs</h3>
+          <button onclick="loadMyQuotes()" class="btn btn-secondary btn-sm">🔄 Refresh</button>
         </div>
-        <div id="sentQuotes"></div>
+        <div id="quotesList"></div>
       </div>
-
     </div>
   </main>
 </div>
 
-<div class="toast-container" id="toastContainer"></div>
+<!-- Quote Modal -->
+<div id="quoteModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; align-items:center; justify-content:center;">
+  <div class="auth-card" style="max-width:400px; margin:1rem;">
+    <h4 class="font-bold mb-3">Send Quote</h4>
+    <input type="hidden" id="modalRequestId"/>
+    <div class="form-group">
+      <label class="form-label">Price (₹)</label>
+      <input class="form-input" id="modalPrice" type="number" min="1" required/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Message (optional)</label>
+      <textarea class="form-textarea" id="modalMessage" rows="2"></textarea>
+    </div>
+    <div class="flex gap-2">
+      <button class="btn btn-primary flex-1" onclick="submitQuote()">Send</button>
+      <button class="btn btn-outline flex-1" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
 
+<div class="toast-container" id="toastContainer"></div>
 <script src="script.js"></script>
 <script>
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').style.display =
-    document.getElementById('sidebar').classList.contains('open') ? 'block' : 'none';
-}
-function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebarOverlay').style.display = 'none';
-}
-function logout() {
-  if (confirm('Log out of FixBit?')) {
-    localStorage.removeItem('user');
-    window.location.href = 'index.html';
+  let shopLat, shopLng;
+  let currentRequests = [];
+  let chatRequestId = null;
+  let chatReceiverId = null;
+  const user = checkAuth();
+
+  if (user) {
+    document.getElementById('sidebarName').innerText = user.name || 'Shop';
+    document.getElementById('sidebarInitial').innerText = (user.name || 'S')[0].toUpperCase();
+  } else {
+    window.location.href = 'login.html';
   }
-}
-if (window.innerWidth < 768) {
-  document.getElementById('hamburgerBtn').style.display = 'flex';
-}
+
+  // Sidebar toggle for mobile
+  window.toggleSidebar = () => {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').style.display = 
+      document.getElementById('sidebar').classList.contains('open') ? 'block' : 'none';
+  };
+  window.closeSidebar = () => {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').style.display = 'none';
+  };
+  if (window.innerWidth < 768) {
+    document.getElementById('hamburgerBtn').style.display = 'flex';
+  }
+
+  // Tab switching
+  window.showTab = (tabId, el) => {
+    document.querySelectorAll('[id^="tab-"]').forEach(t => t.style.display = 'none');
+    document.getElementById(`tab-${tabId}`).style.display = 'block';
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    if (tabId === 'nearby') loadNearby();
+    if (tabId === 'quotes') loadMyQuotes();
+  };
+
+  // Location handling
+  async function updateShopLocation() {
+    try {
+      const pos = await getCurrentPosition();
+      shopLat = pos.lat;
+      shopLng = pos.lng;
+      await apiRequest('/shops/location', 'PUT', { latitude: shopLat, longitude: shopLng });
+      showToast('Location updated!', 'success');
+      document.getElementById('locationWarning').style.display = 'none';
+      loadNearby();
+    } catch (e) {
+      showToast('Could not update location', 'error');
+    }
+  }
+
+  async function loadNearby() {
+    if (!shopLat || !shopLng) {
+      if (user.latitude && user.longitude) {
+        shopLat = user.latitude;
+        shopLng = user.longitude;
+      } else {
+        document.getElementById('locationWarning').style.display = 'block';
+        document.getElementById('nearbyList').innerHTML = '<div class="empty-state">Set your location to see nearby requests</div>';
+        return;
+      }
+    }
+    const requests = await loadNearbyRequests(shopLat, shopLng);
+    currentRequests = requests;
+    renderNearby(requests);
+  }
+
+  function renderNearby(requests) {
+    const container = document.getElementById('nearbyList');
+    if (!requests.length) {
+      container.innerHTML = '<div class="empty-state">No nearby requests</div>';
+      return;
+    }
+    container.innerHTML = requests.map(r => `
+      <div class="request-card mb-3">
+        <div class="flex justify-between">
+          <h4 class="font-bold">${r.brand} ${r.model}</h4>
+          <span class="dist-badge">📍 ${r.distance.toFixed(1)} km</span>
+        </div>
+        <p class="text-sm">${r.issue_type} - ${r.description}</p>
+        <p class="text-xs text-slate-400 mt-1">Radius: ${r.radius} km</p>
+        <button class="btn btn-primary btn-sm mt-3" onclick="openQuoteModal(${r.id})">Send Quote</button>
+      </div>
+    `).join('');
+  }
+
+  window.openQuoteModal = (requestId) => {
+    document.getElementById('modalRequestId').value = requestId;
+    document.getElementById('quoteModal').style.display = 'flex';
+  };
+
+  window.closeModal = () => {
+    document.getElementById('quoteModal').style.display = 'none';
+    document.getElementById('modalPrice').value = '';
+    document.getElementById('modalMessage').value = '';
+  };
+
+  window.submitQuote = async () => {
+    const requestId = document.getElementById('modalRequestId').value;
+    const price = document.getElementById('modalPrice').value;
+    const message = document.getElementById('modalMessage').value;
+    if (!price || price <= 0) {
+      showToast('Enter a valid price', 'error');
+      return;
+    }
+    if (await sendQuote(requestId, price, message)) {
+      closeModal();
+      loadNearby();
+    }
+  };
+
+  async function loadMyQuotes() {
+    const quotes = await loadShopQuotes();
+    const container = document.getElementById('quotesList');
+    if (!quotes.length) {
+      container.innerHTML = '<div class="empty-state">No quotes sent yet</div>';
+      return;
+    }
+    container.innerHTML = quotes.map(q => {
+      const isAccepted = q.request_status === 'accepted' || q.request_status === 'in_progress' || q.request_status === 'completed';
+      const statusOptions = ['accepted', 'in_progress', 'completed'];
+      return `
+        <div class="request-card mb-3">
+          <div class="flex justify-between">
+            <span class="font-bold">${q.brand} ${q.model}</span>
+            <span class="price-tag">₹${q.price}</span>
+          </div>
+          <p>Customer: ${q.user_name}</p>
+          <p>Current Status: <span class="badge badge-teal">${q.request_status}</span></p>
+          ${isAccepted ? `
+            <div class="mt-3 flex gap-2 items-center">
+              <select class="form-select text-sm" id="status-${q.request_id}" onchange="updateStatus(${q.request_id}, this.value)">
+                ${statusOptions.map(s => `<option value="${s}" ${q.request_status === s ? 'selected' : ''}>${s.replace('_', ' ')}</option>`).join('')}
+              </select>
+              <button class="btn btn-sm btn-outline" onclick="openChat(${q.request_id}, ${q.user_id})">💬 Chat</button>
+            </div>
+          ` : `
+            <p class="text-sm text-slate-400 mt-2">Waiting for customer to accept</p>
+          `}
+          ${q.request_status === 'completed' ? `
+            <p class="text-sm text-green-600 mt-2">✅ Job completed</p>
+          ` : ''}
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.updateStatus = async (requestId, status) => {
+    if (await updateRequestStatus(requestId, status)) {
+      loadMyQuotes();
+    }
+  };
+
+  // Chat functions
+  window.openChat = async (requestId, userId) => {
+  chatRequestId = requestId;
+  chatReceiverId = userId;
+  
+  // If userId is undefined, fetch request details to get user_id
+  if (!chatReceiverId) {
+    try {
+      const reqData = await apiRequest(`/requests/${requestId}`);
+      if (reqData.success) {
+        chatReceiverId = reqData.request.user_id;
+      }
+    } catch (e) {
+      showToast('Could not determine user', 'error');
+      return;
+    }
+  }
+  
+  document.getElementById('chatModal').style.display = 'flex';
+  await loadChatMessages();
+};
+
+  window.closeChat = () => {
+    document.getElementById('chatModal').style.display = 'none';
+  };
+
+  async function loadChatMessages() {
+    const data = await getMessages(chatRequestId);
+    const container = document.getElementById('chatMessages');
+    if (!data.success) return;
+    container.innerHTML = data.messages.map(m => `
+      <div class="mb-2 ${m.sender_id === user.id ? 'text-right' : ''}">
+        <span class="inline-block p-2 rounded ${m.sender_id === user.id ? 'bg-orange-100' : 'bg-gray-100'}">${m.body}</span>
+        <div class="text-xs text-slate-400">${m.sender_name}</div>
+      </div>
+    `).join('');
+    container.scrollTop = container.scrollHeight;
+    // Mark messages as read
+    await markMessagesRead(chatRequestId);
+  }
+
+  window.sendChatMessage = async () => {
+    const input = document.getElementById('chatInput');
+    const body = input.value.trim();
+    if (!body) return;
+    await sendMessage(chatRequestId, chatReceiverId, body);
+    input.value = '';
+    await loadChatMessages();
+  };
+
+  // Initialize
+  (async () => {
+    if (user.latitude && user.longitude) {
+      shopLat = user.latitude;
+      shopLng = user.longitude;
+    }
+    loadNearby();
+  })();
 </script>
 </body>
 </html>

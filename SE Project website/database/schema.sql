@@ -1,7 +1,7 @@
 -- ================================================================
---  FixBit v2 — Database Schema
---  Upgrades: status lifecycle, accept system, reviews, messages,
---            indexes for performance
+--  FixBit v2.1 — Complete Database Schema
+--  Includes: users, requests, responses, reviews, messages
+--  Added: banned column for admin user management
 -- ================================================================
 
 DROP DATABASE IF EXISTS fixbit;
@@ -9,25 +9,26 @@ CREATE DATABASE fixbit CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE fixbit;
 
 -- ──────────────────────────────────────────────────────────────
---  USERS  (both customers and shops share this table via role)
+--  USERS
 -- ──────────────────────────────────────────────────────────────
 CREATE TABLE users (
   id          INT AUTO_INCREMENT PRIMARY KEY,
   name        VARCHAR(120),
   email       VARCHAR(150),
   phone       VARCHAR(20)  NOT NULL,
-  password    VARCHAR(255) NOT NULL,   -- bcrypt hash
+  password    VARCHAR(255) NOT NULL,            -- bcrypt hash
   role        ENUM('user','shop') NOT NULL,
   latitude    DECIMAL(10,7),
   longitude   DECIMAL(10,7),
-  avg_rating  DECIMAL(3,2) DEFAULT NULL,  -- cached average, updated on each review
+  avg_rating  DECIMAL(3,2) DEFAULT NULL,       -- cached shop rating
+  banned      TINYINT(1) DEFAULT 0,            -- admin ban flag
   created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY uniq_phone (phone),
-  UNIQUE KEY uniq_email (email)   -- NULL values are not considered duplicates in MySQL
+  UNIQUE KEY uniq_email (email)
 );
 
 -- ──────────────────────────────────────────────────────────────
---  REQUESTS  (repair jobs posted by users)
+--  REQUESTS (repair jobs posted by users)
 -- ──────────────────────────────────────────────────────────────
 CREATE TABLE requests (
   id               INT AUTO_INCREMENT PRIMARY KEY,
@@ -40,10 +41,9 @@ CREATE TABLE requests (
   latitude         DECIMAL(10,7),
   longitude        DECIMAL(10,7),
   radius           INT DEFAULT 10,
-  -- lifecycle
   status           ENUM('pending','accepted','in_progress','completed','cancelled')
                    DEFAULT 'pending',
-  accepted_shop_id INT DEFAULT NULL,   -- which shop the user accepted
+  accepted_shop_id INT DEFAULT NULL,
   created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -54,7 +54,7 @@ CREATE TABLE requests (
 );
 
 -- ──────────────────────────────────────────────────────────────
---  RESPONSES  (quotes sent by shops)
+--  RESPONSES (quotes sent by shops)
 -- ──────────────────────────────────────────────────────────────
 CREATE TABLE responses (
   id          INT AUTO_INCREMENT PRIMARY KEY,
@@ -72,7 +72,7 @@ CREATE TABLE responses (
 );
 
 -- ──────────────────────────────────────────────────────────────
---  REVIEWS  (user rates shop after job completion)
+--  REVIEWS (user rates shop after job completion)
 -- ──────────────────────────────────────────────────────────────
 CREATE TABLE reviews (
   id          INT AUTO_INCREMENT PRIMARY KEY,
@@ -82,7 +82,7 @@ CREATE TABLE reviews (
   rating      TINYINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
   comment     TEXT,
   created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY uniq_review (request_id, user_id),  -- one review per request
+  UNIQUE KEY uniq_review (request_id, user_id),
   FOREIGN KEY (request_id) REFERENCES requests(id) ON DELETE CASCADE,
   FOREIGN KEY (user_id)    REFERENCES users(id)    ON DELETE CASCADE,
   FOREIGN KEY (shop_id)    REFERENCES users(id)    ON DELETE CASCADE,
@@ -90,7 +90,7 @@ CREATE TABLE reviews (
 );
 
 -- ──────────────────────────────────────────────────────────────
---  MESSAGES  (basic in-app chat per request)
+--  MESSAGES (in-app chat per request)
 -- ──────────────────────────────────────────────────────────────
 CREATE TABLE messages (
   id          INT AUTO_INCREMENT PRIMARY KEY,
