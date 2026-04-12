@@ -25,6 +25,9 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/requests', require('./routes/requests'));
 app.use('/api/responses', require('./routes/responses'));
 app.use('/api/shops', require('./routes/shops'));
+app.use('/api/reviews', require('./routes/reviews'));
+app.use('/api/messages', require('./routes/messages'));
+app.use('/api/admin', require('./routes/admin'));
 
 // Global error handler
 app.use((err, req, res, next) => {

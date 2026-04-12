@@ -56,9 +56,18 @@ async function login(email, password) {
     localStorage.setItem('user', JSON.stringify(data.user));
     currentUser = data.user;
     showToast('Login successful!', 'success');
-    setTimeout(() => {
-      window.location.href = data.user.role === 'shop' ? 'shop-dashboard.html' : 'user-dashboard.html';
-    }, 500);
+    
+    // Admin check – redirect to admin page if admin email
+    const adminEmails = ['admin@fixbit.com', 'admin@gmail.com']; // Add yours
+    if (adminEmails.includes(data.user.email)) {
+      setTimeout(() => {
+        window.location.href = 'admin.html';
+      }, 500);
+    } else {
+      setTimeout(() => {
+        window.location.href = data.user.role === 'shop' ? 'shop-dashboard.html' : 'user-dashboard.html';
+      }, 500);
+    }
   }
   return data;
 }
@@ -95,9 +104,13 @@ function getCurrentPosition() {
 // ==================== USER DASHBOARD ====================
 async function submitUserRequest(formData) {
   const form = new FormData();
-  for (let key in formData) form.append(key, formData[key]);
-  if (formData.imageFile) form.append('image', formData.imageFile);
-
+  for (let key in formData) {
+    if (key === 'imageFile' && formData[key]) {
+      form.append('image', formData[key]);
+    } else if (formData[key] !== undefined) {
+      form.append(key, formData[key]);
+    }
+  }
   const token = localStorage.getItem('token');
   const res = await fetch(`${API_BASE}/requests`, {
     method: 'POST',
@@ -116,10 +129,7 @@ async function submitUserRequest(formData) {
 
 async function loadUserRequests() {
   const data = await apiRequest('/requests/my');
-  if (data.success) {
-    // Update stats and render requests list (implementation in HTML)
-    return data.requests;
-  }
+  if (data.success) return data.requests;
   return [];
 }
 
@@ -130,7 +140,7 @@ async function loadQuotesForRequest(requestId) {
 
 async function acceptQuote(requestId, shopId) {
   const data = await apiRequest(`/requests/${requestId}/accept`, 'PUT', { shop_id: shopId });
-  if (data.success) showToast('Quote accepted! Shop contact revealed.', 'success');
+  if (data.success) showToast('Quote accepted!', 'success');
   return data.success;
 }
 
@@ -157,6 +167,35 @@ async function updateRequestStatus(requestId, status) {
   return data.success;
 }
 
+// ==================== SHOP SEARCH ====================
+async function searchShops(query, lat, lng) {
+  let url = `/shops/search?q=${encodeURIComponent(query)}`;
+  if (lat && lng) url += `&lat=${lat}&lng=${lng}`;
+  return await apiRequest(url);
+}
+
+// ==================== MESSAGING ====================
+async function sendMessage(requestId, receiverId, body) {
+  return await apiRequest('/messages', 'POST', { request_id: requestId, receiver_id: receiverId, body });
+}
+
+async function getMessages(requestId) {
+  return await apiRequest(`/messages/request/${requestId}`);
+}
+
+async function markMessagesRead(requestId) {
+  return await apiRequest(`/messages/read/${requestId}`, 'PUT');
+}
+
+// ==================== REVIEWS ====================
+async function submitReview(requestId, rating, comment) {
+  return await apiRequest('/reviews', 'POST', { request_id: requestId, rating, comment });
+}
+
+async function getShopReviews(shopId) {
+  return await apiRequest(`/reviews/shop/${shopId}`);
+}
+
 // ==================== INITIALIZATION ====================
 document.addEventListener('DOMContentLoaded', () => {
   // Set up logout buttons
@@ -164,13 +203,5 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', logout);
   });
 
-  // Page-specific initializations
-  const path = window.location.pathname;
-  if (path.includes('user-dashboard.html')) initUserDashboard();
-  if (path.includes('shop-dashboard.html')) initShopDashboard();
-  if (path.includes('login.html')) initLoginPage();
-  if (path.includes('register')) initRegisterPage();
+  // Page-specific initializations can be added here
 });
-
-// Detailed page initializers are implemented in the HTML files
-// but we've provided the core API functions above.

@@ -3,9 +3,10 @@ const multer = require('multer');
 const path = require('path');
 const db = require('../db');
 const auth = require('../middleware/auth');
+const { sendEmail } = require('../utils/email');
 const router = express.Router();
 
-// Multer configuration for image uploads
+// Multer config
 const storage = multer.diskStorage({
   destination: path.join(__dirname, '../uploads'),
   filename: (req, file, cb) => {
@@ -13,32 +14,25 @@ const storage = multer.diskStorage({
     cb(null, uniqueSuffix + '-' + file.originalname);
   }
 });
-
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed'));
-    }
+    if (file.mimetype.startsWith('image/')) cb(null, true);
+    else cb(new Error('Only images allowed'));
   }
 });
 
-// ==================== SUBMIT REQUEST (USER) ====================
+// Submit request
 router.post('/', auth, upload.single('image'), async (req, res) => {
   if (req.user.role !== 'user') {
     return res.status(403).json({ success: false, message: 'Only users can create requests' });
   }
-
   const { brand, model, issue_type, description, latitude, longitude, radius } = req.body;
   const image = req.file ? req.file.filename : null;
-
   if (!brand || !model || !issue_type || !description || !latitude || !longitude) {
     return res.status(400).json({ success: false, message: 'Missing required fields' });
   }
-
   try {
     const [result] = await db.query(
       `INSERT INTO requests (user_id, brand, model, issue_type, description, image, latitude, longitude, radius)
@@ -47,24 +41,21 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
     );
     res.status(201).json({ success: true, requestId: result.insertId });
   } catch (err) {
-    console.error('Error creating request:', err);
+    console.error(err);
     res.status(500).json({ success: false, message: 'Failed to create request' });
   }
 });
 
-// ==================== GET NEARBY REQUESTS (SHOP) ====================
+// Get nearby requests (shop)
 router.get('/nearby', auth, async (req, res) => {
   if (req.user.role !== 'shop') {
     return res.status(403).json({ success: false, message: 'Only shops can view nearby requests' });
   }
-
   const { lat, lng } = req.query;
   if (!lat || !lng) {
     return res.status(400).json({ success: false, message: 'Latitude and longitude required' });
   }
-
   try {
-    // Get shop's own location (optional, but we can use query params directly)
     const [requests] = await db.query(
       `SELECT r.*, u.name as user_name,
         (6371 * acos(
@@ -81,17 +72,16 @@ router.get('/nearby', auth, async (req, res) => {
     );
     res.json({ success: true, requests });
   } catch (err) {
-    console.error('Error fetching nearby requests:', err);
+    console.error(err);
     res.status(500).json({ success: false, message: 'Failed to fetch requests' });
   }
 });
 
-// ==================== GET USER'S OWN REQUESTS ====================
+// Get user's own requests
 router.get('/my', auth, async (req, res) => {
   if (req.user.role !== 'user') {
     return res.status(403).json({ success: false, message: 'Access denied' });
   }
-
   try {
     const [requests] = await db.query(
       `SELECT r.*,
@@ -104,69 +94,57 @@ router.get('/my', auth, async (req, res) => {
     );
     res.json({ success: true, requests });
   } catch (err) {
-    console.error('Error fetching user requests:', err);
+    console.error(err);
     res.status(500).json({ success: false, message: 'Failed to fetch requests' });
   }
 });
 
-// ==================== GET SINGLE REQUEST BY ID ====================
+// Get single request
 router.get('/:id', auth, async (req, res) => {
   const requestId = req.params.id;
-
   try {
     const [requests] = await db.query(
-      `SELECT r.*, u.name as user_name
-       FROM requests r
-       JOIN users u ON r.user_id = u.id
+      `SELECT r.*, u.name as user_name 
+       FROM requests r 
+       JOIN users u ON r.user_id = u.id 
        WHERE r.id = ?`,
       [requestId]
     );
-
     if (requests.length === 0) {
       return res.status(404).json({ success: false, message: 'Request not found' });
     }
-
     const request = requests[0];
-
-    // Permission: user must own the request, or shop must be the accepted shop
     if (req.user.role === 'user' && request.user_id !== req.user.id) {
       return res.status(403).json({ success: false, message: 'Access denied' });
     }
     if (req.user.role === 'shop' && request.accepted_shop_id !== req.user.id) {
       return res.status(403).json({ success: false, message: 'Access denied' });
     }
-
     res.json({ success: true, request });
   } catch (err) {
-    console.error('Error fetching request:', err);
+    console.error(err);
     res.status(500).json({ success: false, message: 'Failed to fetch request' });
   }
 });
 
-// ==================== ACCEPT QUOTE (USER) ====================
+// Accept quote
 router.put('/:id/accept', auth, async (req, res) => {
   if (req.user.role !== 'user') {
     return res.status(403).json({ success: false, message: 'Only users can accept quotes' });
   }
-
   const requestId = req.params.id;
   const { shop_id } = req.body;
-
   if (!shop_id) {
     return res.status(400).json({ success: false, message: 'shop_id is required' });
   }
-
   try {
-    // Verify the request belongs to the user
     const [requests] = await db.query(
       'SELECT * FROM requests WHERE id = ? AND user_id = ?',
       [requestId, req.user.id]
     );
     if (requests.length === 0) {
-      return res.status(404).json({ success: false, message: 'Request not found or not owned by you' });
+      return res.status(404).json({ success: false, message: 'Request not found' });
     }
-
-    // Verify the shop has actually sent a quote
     const [responses] = await db.query(
       'SELECT id FROM responses WHERE request_id = ? AND shop_id = ?',
       [requestId, shop_id]
@@ -174,48 +152,51 @@ router.put('/:id/accept', auth, async (req, res) => {
     if (responses.length === 0) {
       return res.status(400).json({ success: false, message: 'No quote from this shop' });
     }
-
     await db.query(
       'UPDATE requests SET status = ?, accepted_shop_id = ? WHERE id = ?',
       ['accepted', shop_id, requestId]
     );
-
-    res.json({ success: true, message: 'Quote accepted successfully' });
+    // Notify shop?
+    res.json({ success: true, message: 'Quote accepted' });
   } catch (err) {
-    console.error('Error accepting quote:', err);
+    console.error(err);
     res.status(500).json({ success: false, message: 'Failed to accept quote' });
   }
 });
 
-// ==================== UPDATE REQUEST STATUS (SHOP) ====================
+// Update request status (shop)
 router.put('/:id/status', auth, async (req, res) => {
   if (req.user.role !== 'shop') {
     return res.status(403).json({ success: false, message: 'Only shops can update status' });
   }
-
   const requestId = req.params.id;
   const { status } = req.body;
-
-  const allowedStatuses = ['accepted', 'in_progress', 'completed', 'cancelled'];
-  if (!allowedStatuses.includes(status)) {
+  const allowed = ['accepted', 'in_progress', 'completed', 'cancelled'];
+  if (!allowed.includes(status)) {
     return res.status(400).json({ success: false, message: 'Invalid status' });
   }
-
   try {
-    // Verify shop is the accepted shop for this request
     const [requests] = await db.query(
-      'SELECT * FROM requests WHERE id = ? AND accepted_shop_id = ?',
+      'SELECT user_id FROM requests WHERE id = ? AND accepted_shop_id = ?',
       [requestId, req.user.id]
     );
     if (requests.length === 0) {
       return res.status(404).json({ success: false, message: 'Request not found or not assigned to you' });
     }
-
     await db.query('UPDATE requests SET status = ? WHERE id = ?', [status, requestId]);
 
-    res.json({ success: true, message: 'Status updated' });
+    // Send email notification to user
+    const [userResult] = await db.query('SELECT email, name FROM users WHERE id = ?', [requests[0].user_id]);
+    if (userResult[0]?.email) {
+      sendEmail(
+        userResult[0].email,
+        `FixBit: Repair status updated to ${status}`,
+        `Hello ${userResult[0].name},\n\nYour repair request #${requestId} is now ${status}.`
+      );
+    }
+    res.json({ success: true });
   } catch (err) {
-    console.error('Error updating status:', err);
+    console.error(err);
     res.status(500).json({ success: false, message: 'Failed to update status' });
   }
 });

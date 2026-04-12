@@ -56,8 +56,9 @@ router.get('/shop', auth, async (req, res) => {
 
   try {
     const [quotes] = await db.query(
-      `SELECT r.*, req.brand, req.model, req.issue_type, req.status as request_status,
-              u.name as user_name
+      `SELECT r.*, 
+              req.brand, req.model, req.issue_type, req.status as request_status, 
+              u.name as user_name, u.id as user_id    -- ← ADD u.id as user_id
        FROM responses r
        JOIN requests req ON r.request_id = req.id
        JOIN users u ON req.user_id = u.id
