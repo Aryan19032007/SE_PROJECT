@@ -1,254 +1,503 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FixBit — User Dashboard</title>
-  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body>
 
-<!-- Chat Modal -->
-<div id="chatModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; align-items:flex-end; justify-content:center;">
-  <div style="background:white; width:100%; max-width:500px; height:70vh; border-radius:20px 20px 0 0; display:flex; flex-direction:column;">
-    <div style="padding:1rem; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between;">
-      <h3 class="font-bold">Chat</h3>
-      <button onclick="closeChat()" style="font-size:1.5rem;">&times;</button>
-    </div>
-    <div id="chatMessages" style="flex:1; overflow-y:auto; padding:1rem;"></div>
-    <div style="padding:1rem; border-top:1px solid #e2e8f0; display:flex;">
-      <input id="chatInput" type="text" placeholder="Type a message..." style="flex:1; padding:.5rem; border:1px solid #cbd5e1; border-radius:8px;"/>
-      <button onclick="sendChatMessage()" style="margin-left:.5rem; background:#14b8a6; color:white; border:none; border-radius:8px; padding:.5rem 1rem;">Send</button>
-    </div>
-  </div>
-</div>
-
-<!-- Review Modal -->
-<div id="reviewModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; align-items:center; justify-content:center;">
-  <div class="auth-card" style="max-width:400px;">
-    <h3 class="font-bold mb-3">Rate Shop</h3>
-    <input type="hidden" id="reviewRequestId"/>
-    <div class="form-group">
-      <label class="form-label">Rating (1-5)</label>
-      <select class="form-select" id="reviewRating">
-        <option value="5">★★★★★ (5)</option>
-        <option value="4">★★★★☆ (4)</option>
-        <option value="3">★★★☆☆ (3)</option>
-        <option value="2">★★☆☆☆ (2)</option>
-        <option value="1">★☆☆☆☆ (1)</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Comment</label>
-      <textarea class="form-textarea" id="reviewComment" rows="2"></textarea>
-    </div>
-    <div class="flex gap-2">
-      <button class="btn btn-primary flex-1" onclick="submitReview()">Submit</button>
-      <button class="btn btn-outline flex-1" onclick="closeReviewModal()">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<div class="dash-layout">
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo">🔧 FixBit</div>
-    <div class="sidebar-user">
-      <div class="sidebar-avatar" id="sidebarInitial">U</div>
-      <div class="sidebar-user-info">
-        <div class="name" id="sidebarName">User</div>
-        <div class="role">User Account</div>
+  <!-- Chat Modal -->
+  <div id="chatModal"
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; align-items:flex-end; justify-content:center;">
+    <div
+      style="background:white; width:100%; max-width:500px; height:70vh; border-radius:20px 20px 0 0; display:flex; flex-direction:column;">
+      <div style="padding:1rem; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between;">
+        <h3 class="font-bold">Chat</h3>
+        <button onclick="closeChat()" style="font-size:1.5rem;">&times;</button>
+      </div>
+      <div id="chatMessages" style="flex:1; overflow-y:auto; padding:1rem;"></div>
+      <div style="padding:1rem; border-top:1px solid #e2e8f0; display:flex;">
+        <input id="chatInput" type="text" placeholder="Type a message..."
+          style="flex:1; padding:.5rem; border:1px solid #cbd5e1; border-radius:8px;" />
+        <button onclick="sendChatMessage()"
+          style="margin-left:.5rem; background:#14b8a6; color:white; border:none; border-radius:8px; padding:.5rem 1rem;">Send</button>
       </div>
     </div>
-    <nav>
-      <button class="nav-item active" onclick="showTab('newRequest', this)">📤 New Request</button>
-      <button class="nav-item" onclick="showTab('myRequests', this)">📋 My Requests</button>
-      <button class="nav-item" onclick="showTab('quotes', this)">💬 Quotes</button>
-      <button class="nav-item" onclick="showTab('shops', this)">🔍 Find Shops</button>
-    </nav>
-    <div class="sidebar-footer">
-      <button class="nav-item" onclick="logout()">🚪 Log Out</button>
-    </div>
-  </aside>
+  </div>
 
-  <main class="dash-main">
-    <div class="dash-topbar">
-      <h2 class="font-outfit">User Dashboard</h2>
-      <button onclick="toggleSidebar()" class="btn btn-outline btn-sm" id="hamburgerBtn">☰</button>
+  <!-- Review Modal -->
+  <div id="reviewModal"
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; align-items:center; justify-content:center;">
+    <div class="auth-card" style="max-width:400px;">
+      <h3 class="font-bold mb-3">Rate Shop</h3>
+      <input type="hidden" id="reviewRequestId" />
+      <div class="form-group">
+        <label class="form-label">Rating (1-5)</label>
+        <select class="form-select" id="reviewRating">
+          <option value="5">★★★★★ (5)</option>
+          <option value="4">★★★★☆ (4)</option>
+          <option value="3">★★★☆☆ (3)</option>
+          <option value="2">★★☆☆☆ (2)</option>
+          <option value="1">★☆☆☆☆ (1)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Comment</label>
+        <textarea class="form-textarea" id="reviewComment" rows="2"></textarea>
+      </div>
+      <div class="flex gap-2">
+        <button class="btn btn-primary flex-1" onclick="submitReview()">Submit</button>
+        <button class="btn btn-outline flex-1" onclick="closeReviewModal()">Cancel</button>
+      </div>
     </div>
+  </div>
 
-    <div class="dash-content">
-      <!-- New Request Tab -->
-      <div id="tab-newRequest">
-        <div class="card p-6">
-          <h3 class="font-outfit text-lg mb-4">Submit Repair Request</h3>
-          <form id="requestForm">
-            <div class="grid grid-cols-2 gap-4">
-              <div class="form-group"><label class="form-label">Brand</label><select class="form-select" id="brand" required><option value="">Select</option><option>Apple</option><option>Samsung</option><option>Xiaomi</option><option>OnePlus</option><option>Other</option></select></div>
-              <div class="form-group"><label class="form-label">Model</label><input class="form-input" id="model" required/></div>
-            </div>
-            <div class="form-group"><label class="form-label">Issue Type</label><select class="form-select" id="issue_type" required><option value="">Select</option><option>Screen Damage</option><option>Battery</option><option>Charging</option><option>Camera</option><option>Other</option></select></div>
-            <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" id="description" rows="3" required></textarea></div>
-            <div class="form-group"><label class="form-label">Photo (optional)</label><input type="file" id="image" accept="image/*"/></div>
-            <div class="form-group"><label class="form-label">Search Radius</label><div class="radius-selector" id="radiusGroup"><button type="button" class="radius-btn" data-radius="5">5 km</button><button type="button" class="radius-btn selected" data-radius="10">10 km</button><button type="button" class="radius-btn" data-radius="20">20 km</button><button type="button" class="radius-btn" data-radius="40">40 km</button></div><input type="hidden" id="radius" value="10"/></div>
-            <input type="hidden" id="latitude"/><input type="hidden" id="longitude"/>
-            <button type="submit" class="btn btn-primary btn-full btn-lg">Submit Request</button>
-          </form>
+  <div class="dash-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">🔧 FixBit</div>
+      <div class="sidebar-user">
+        <div class="sidebar-avatar" id="sidebarInitial">U</div>
+        <div class="sidebar-user-info">
+          <div class="name" id="sidebarName">User</div>
+          <div class="role">User Account</div>
         </div>
       </div>
+      <nav>
+        <button class="nav-item active" onclick="showTab('newRequest', this)">📤 New Request</button>
+        <button class="nav-item" onclick="showTab('myRequests', this)">📋 My Requests</button>
+        <button class="nav-item" onclick="showTab('quotes', this)">💬 Quotes</button>
+        <button class="nav-item" onclick="showTab('shops', this)">🔍 Find Shops</button>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="nav-item" onclick="logout()">🚪 Log Out</button>
+      </div>
+    </aside>
 
-      <!-- My Requests Tab -->
-      <div id="tab-myRequests" style="display:none;">
-        <div class="flex justify-between mb-4"><h3 class="font-outfit text-lg">My Repair Requests</h3><button onclick="loadMyRequests()" class="btn btn-secondary btn-sm">🔄 Refresh</button></div>
-        <div id="requestsList"></div>
+    <main class="dash-main">
+      <div class="dash-topbar">
+        <h2 class="font-outfit">User Dashboard</h2>
+        <button onclick="toggleSidebar()" class="btn btn-outline btn-sm" id="hamburgerBtn">☰</button>
       </div>
 
-      <!-- Quotes Tab -->
-      <div id="tab-quotes" style="display:none;">
-        <h3 class="font-outfit text-lg mb-4">Quotes Received</h3>
-        <div id="quotesList"></div>
-      </div>
-
-      <!-- Shops Search Tab -->
-      <div id="tab-shops" style="display:none;">
-        <div class="card p-6">
-          <h3 class="font-outfit text-lg mb-4">Find Repair Shops</h3>
-          <div class="flex gap-2 mb-4">
-            <input type="text" id="shopSearchInput" placeholder="Shop name..." class="form-input flex-1"/>
-            <button onclick="searchShops()" class="btn btn-primary">Search</button>
+      <div class="dash-content">
+        <!-- New Request Tab -->
+        <div id="tab-newRequest">
+          <div class="card p-6">
+            <h3 class="font-outfit text-lg mb-4">Submit Repair Request</h3>
+            <form id="requestForm">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="form-group">
+                  <label class="form-label">Brand</label>
+                  <select class="form-select" id="brand" required onchange="populateModels()">
+                    <option value="">Select Brand</option>
+                    <option value="Apple">Apple</option>
+                    <option value="Samsung">Samsung</option>
+                    <option value="Google">Google Pixel</option>
+                    <option value="OnePlus">OnePlus</option>
+                    <option value="Xiaomi">Xiaomi / Redmi / Poco</option>
+                    <option value="Oppo">Oppo</option>
+                    <option value="Vivo">Vivo</option>
+                    <option value="Realme">Realme</option>
+                    <option value="Motorola">Motorola</option>
+                    <option value="Nothing">Nothing</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Model</label>
+                  <select class="form-select" id="modelSelect" required onchange="handleModelSelect()">
+                    <option value="">Select Model</option>
+                  </select>
+                  <input class="form-input mt-2" id="modelCustom" type="text" placeholder="Or type custom model"
+                    style="display:none;" />
+                  <input type="hidden" id="model" name="model" />
+                </div>
+              </div>
+              <div class="form-group">
+  <label class="form-label">Issue Type</label>
+  <select class="form-select" id="issue_type" required>
+    <option value="">-- Select an issue --</option>
+    
+    <!-- Display & Screen -->
+    <optgroup label="📱 Display & Screen">
+      <option value="Screen cracked / shattered">Screen cracked / shattered</option>
+      <option value="Screen not responding to touch">Screen not responding to touch</option>
+      <option value="Display flickering / lines">Display flickering / lines</option>
+      <option value="Dead pixels / spots">Dead pixels / spots</option>
+      <option value="Backlight issue">Backlight issue (screen dim / no light)</option>
+      <option value="LCD / OLED replacement">LCD / OLED replacement</option>
+    </optgroup>
+    
+    <!-- Battery & Power -->
+    <optgroup label="🔋 Battery & Power">
+      <option value="Battery draining fast">Battery draining fast</option>
+      <option value="Phone not charging">Phone not charging</option>
+      <option value="Phone not turning on">Phone not turning on / dead</option>
+      <option value="Overheating">Overheating</option>
+      <option value="Battery replacement">Battery replacement</option>
+      <option value="Charging port loose / damaged">Charging port loose / damaged</option>
+      <option value="Wireless charging not working">Wireless charging not working</option>
+    </optgroup>
+    
+    <!-- Buttons & Ports -->
+    <optgroup label="🔘 Buttons & Ports">
+      <option value="Power button not working">Power button not working</option>
+      <option value="Volume buttons not working">Volume buttons not working</option>
+      <option value="Home / Side button stuck">Home / Side button stuck</option>
+      <option value="Headphone jack issue">Headphone jack issue</option>
+      <option value="SIM card tray problem">SIM card tray problem</option>
+    </optgroup>
+    
+    <!-- Audio & Speakers -->
+    <optgroup label="🔊 Audio & Speakers">
+      <option value="Speaker not working / muffled">Speaker not working / muffled</option>
+      <option value="Microphone not working">Microphone not working (calls/recording)</option>
+      <option value="Earpiece speaker issue">Earpiece speaker issue (can't hear calls)</option>
+      <option value="No sound / audio distortion">No sound / audio distortion</option>
+    </optgroup>
+    
+    <!-- Camera -->
+    <optgroup label="📸 Camera">
+      <option value="Rear camera not working">Rear camera not working</option>
+      <option value="Front camera not working">Front camera not working</option>
+      <option value="Camera glass broken">Camera glass broken</option>
+      <option value="Flash not working">Flash not working</option>
+      <option value="Blurry / focus issue">Blurry / focus issue</option>
+    </optgroup>
+    
+    <!-- Connectivity -->
+    <optgroup label="📶 Connectivity">
+      <option value="WiFi not connecting">WiFi not connecting</option>
+      <option value="Bluetooth not working">Bluetooth not working</option>
+      <option value="Mobile network / no signal">Mobile network / no signal</option>
+      <option value="GPS / location not working">GPS / location not working</option>
+      <option value="NFC / contactless issue">NFC / contactless issue</option>
+    </optgroup>
+    
+    <!-- Water & Physical Damage -->
+    <optgroup label="💧 Water & Physical Damage">
+      <option value="Water damage">Water damage / liquid contact</option>
+      <option value="Dropped / physical impact">Dropped / physical impact</option>
+      <option value="Back glass broken">Back glass broken</option>
+      <option value="Frame / body dent">Frame / body dent</option>
+    </optgroup>
+    
+    <!-- Software & Performance -->
+    <optgroup label="⚙️ Software & Performance">
+      <option value="Phone frozen / unresponsive">Phone frozen / unresponsive</option>
+      <option value="Apps crashing">Apps crashing</option>
+      <option value="Software update failed">Software update failed</option>
+      <option value="Stuck in boot loop">Stuck in boot loop</option>
+      <option value="Storage full / can't install apps">Storage full / can't install apps</option>
+      <option value="Virus / malware removal">Virus / malware removal</option>
+      <option value="Data recovery / backup">Data recovery / backup</option>
+      <option value="Factory reset / unlock">Factory reset / unlock</option>
+    </optgroup>
+    
+    <!-- Accessories & Others -->
+    <optgroup label="🔧 Accessories & Others">
+      <option value="Fingerprint sensor not working">Fingerprint sensor not working</option>
+      <option value="Face unlock issue">Face unlock issue</option>
+      <option value="Vibration motor not working">Vibration motor not working</option>
+      <option value="Accessory compatibility">Accessory compatibility</option>
+      <option value="Other (describe below)">Other (describe below)</option>
+    </optgroup>
+  </select>
+</div>
+              <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea"
+                  id="description" rows="3" required></textarea></div>
+              <div class="form-group"><label class="form-label">Photo (optional)</label><input type="file" id="image"
+                  accept="image/*" /></div>
+              <div class="form-group"><label class="form-label">Search Radius</label>
+                <div class="radius-selector" id="radiusGroup"><button type="button" class="radius-btn" data-radius="5">5
+                    km</button><button type="button" class="radius-btn selected" data-radius="10">10 km</button><button
+                    type="button" class="radius-btn" data-radius="20">20 km</button><button type="button"
+                    class="radius-btn" data-radius="40">40 km</button></div><input type="hidden" id="radius"
+                  value="10" />
+              </div>
+              <input type="hidden" id="latitude" /><input type="hidden" id="longitude" />
+              <button type="submit" class="btn btn-primary btn-full btn-lg">Submit Request</button>
+            </form>
           </div>
-          <div id="shopSearchResults"></div>
+        </div>
+
+        <!-- My Requests Tab -->
+        <div id="tab-myRequests" style="display:none;">
+          <div class="flex justify-between mb-4">
+            <h3 class="font-outfit text-lg">My Repair Requests</h3><button onclick="loadMyRequests()"
+              class="btn btn-secondary btn-sm">🔄 Refresh</button>
+          </div>
+          <div id="requestsList"></div>
+        </div>
+
+        <!-- Quotes Tab -->
+        <div id="tab-quotes" style="display:none;">
+          <h3 class="font-outfit text-lg mb-4">Quotes Received</h3>
+          <div id="quotesList"></div>
+        </div>
+
+        <!-- Shops Search Tab -->
+        <div id="tab-shops" style="display:none;">
+          <div class="card p-6">
+            <h3 class="font-outfit text-lg mb-4">Find Repair Shops</h3>
+            <div class="flex gap-2 mb-4">
+              <input type="text" id="shopSearchInput" placeholder="Shop name..." class="form-input flex-1" />
+              <button onclick="searchShops()" class="btn btn-primary">Search</button>
+            </div>
+            <div id="shopSearchResults"></div>
+          </div>
         </div>
       </div>
-    </div>
-  </main>
-</div>
+    </main>
+  </div>
 
-<div class="toast-container" id="toastContainer"></div>
-<script src="script.js"></script>
-<script>
-  // Global state
-  let currentRequestId = null;
-  let chatRequestId = null;
-  let chatReceiverId = null;
-  const user = checkAuth();
-  if (user) {
-    document.getElementById('sidebarName').innerText = user.name || 'User';
-    document.getElementById('sidebarInitial').innerText = (user.name || 'U')[0].toUpperCase();
-  } else window.location.href = 'login.html';
+  <div class="toast-container" id="toastContainer"></div>
+  <script src="script.js"></script>
+  <script>
+    // Global state
+    let currentRequestId = null;
+    let chatRequestId = null;
+    let chatReceiverId = null;
+    const user = checkAuth();
+    if (user) {
+      document.getElementById('sidebarName').innerText = user.name || 'User';
+      document.getElementById('sidebarInitial').innerText = (user.name || 'U')[0].toUpperCase();
+    } else window.location.href = 'login.html';
 
-  window.showTab = (tabId, el) => {
-    document.querySelectorAll('[id^="tab-"]').forEach(t => t.style.display = 'none');
-    document.getElementById(`tab-${tabId}`).style.display = 'block';
-    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
-    if (tabId === 'myRequests') loadMyRequests();
-    if (tabId === 'quotes' && currentRequestId) loadQuotesForCurrentRequest();
-    if (tabId === 'shops') searchShops();
-  };
+    window.showTab = (tabId, el) => {
+      document.querySelectorAll('[id^="tab-"]').forEach(t => t.style.display = 'none');
+      document.getElementById(`tab-${tabId}`).style.display = 'block';
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      if (tabId === 'myRequests') loadMyRequests();
+      if (tabId === 'quotes' && currentRequestId) loadQuotesForCurrentRequest();
+      if (tabId === 'shops') searchShops();
+    };
 
-  document.querySelectorAll('[data-radius]').forEach(btn => btn.addEventListener('click', function() {
-    document.querySelectorAll('[data-radius]').forEach(b => b.classList.remove('selected'));
-    this.classList.add('selected');
-    document.getElementById('radius').value = this.dataset.radius;
-  }));
+    document.querySelectorAll('[data-radius]').forEach(btn => btn.addEventListener('click', function () {
+      document.querySelectorAll('[data-radius]').forEach(b => b.classList.remove('selected'));
+      this.classList.add('selected');
+      document.getElementById('radius').value = this.dataset.radius;
+    }));
 
-  window.addEventListener('load', async () => {
-    try { const pos = await getCurrentPosition(); document.getElementById('latitude').value = pos.lat; document.getElementById('longitude').value = pos.lng; } catch (e) {}
-    loadMyRequests();
-  });
+    window.addEventListener('load', async () => {
+      try { const pos = await getCurrentPosition(); document.getElementById('latitude').value = pos.lat; document.getElementById('longitude').value = pos.lng; } catch (e) { }
+      loadMyRequests();
+    });
 
-  document.getElementById('requestForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const btn = e.target.querySelector('button[type="submit"]');
-    btn.classList.add('btn-loading'); btn.disabled = true;
-    const formData = { brand: document.getElementById('brand').value, model: document.getElementById('model').value, issue_type: document.getElementById('issue_type').value, description: document.getElementById('description').value, latitude: document.getElementById('latitude').value, longitude: document.getElementById('longitude').value, radius: document.getElementById('radius').value, imageFile: document.getElementById('image').files[0] };
-    const success = await submitUserRequest(formData);
-    btn.classList.remove('btn-loading'); btn.disabled = false;
-    if (success) { e.target.reset(); showTab('myRequests', document.querySelector('[onclick*="myRequests"]')); }
-  });
+    document.getElementById('requestForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.classList.add('btn-loading'); btn.disabled = true;
+      const formData = { brand: document.getElementById('brand').value, model: document.getElementById('model').value, issue_type: document.getElementById('issue_type').value, description: document.getElementById('description').value, latitude: document.getElementById('latitude').value, longitude: document.getElementById('longitude').value, radius: document.getElementById('radius').value, imageFile: document.getElementById('image').files[0] };
+      const success = await submitUserRequest(formData);
+      btn.classList.remove('btn-loading'); btn.disabled = false;
+      if (success) { e.target.reset(); showTab('myRequests', document.querySelector('[onclick*="myRequests"]')); }
+    });
 
-  async function loadMyRequests() {
-    const requests = await loadUserRequests();
-    const container = document.getElementById('requestsList');
-    if (!requests.length) { container.innerHTML = '<div class="empty-state">No requests yet</div>'; return; }
-    container.innerHTML = requests.map(r => `
+    async function loadMyRequests() {
+  const requests = await loadUserRequests();
+  const container = document.getElementById('requestsList');
+  if (!requests.length) {
+    container.innerHTML = '<div class="empty-state">No requests yet</div>';
+    return;
+  }
+  container.innerHTML = requests.map(r => {
+    // Build full image URL (works for both local and Cloudinary)
+    let imageUrl = null;
+    if (r.image) {
+      if (r.image.startsWith('http')) {
+        imageUrl = r.image;
+      } else {
+        imageUrl = `${API_BASE.replace('/api', '')}/uploads/${r.image}`;
+      }
+    }
+    return `
       <div class="request-card mb-3">
-        <div class="flex justify-between"><h4 class="font-bold">${r.brand} ${r.model}</h4><span class="badge badge-teal">${r.status}</span></div>
-        <p class="text-sm text-slate-500">${r.issue_type}</p><p class="mt-2">${r.description}</p>
-        <div class="flex gap-2 mt-3">
-          <button class="btn btn-sm btn-outline" onclick="selectRequestAndViewQuotes(${r.id})">Quotes (${r.response_count || 0})</button>
-          ${r.status === 'accepted' || r.status === 'in_progress' ? `<button class="btn btn-sm btn-outline" onclick="openChat(${r.id}, ${r.accepted_shop_id})">💬 Chat</button>` : ''}
-          ${r.status === 'completed' && !r.reviewed ? `<button class="btn btn-sm btn-primary" onclick="openReviewModal(${r.id})">⭐ Review</button>` : ''}
+        <div class="flex gap-4">
+          ${imageUrl ? `<img src="${imageUrl}" alt="Damage" style="width:80px; height:80px; object-fit:cover; border-radius:8px;">` : ''}
+          <div class="flex-1">
+            <div class="flex justify-between">
+              <h4 class="font-bold">${r.brand} ${r.model}</h4>
+              <span class="badge badge-teal">${r.status}</span>
+            </div>
+            <p class="text-sm text-slate-500">${r.issue_type}</p>
+            <p class="mt-2">${r.description}</p>
+            <div class="flex gap-2 mt-3">
+              <button class="btn btn-sm btn-outline" onclick="selectRequestAndViewQuotes(${r.id})">Quotes (${r.response_count || 0})</button>
+              ${r.status === 'accepted' || r.status === 'in_progress' ? `<button class="btn btn-sm btn-outline" onclick="openChat(${r.id}, ${r.accepted_shop_id})">💬 Chat</button>` : ''}
+              ${r.status === 'completed' && !r.reviewed ? `<button class="btn btn-sm btn-primary" onclick="openReviewModal(${r.id})">⭐ Review</button>` : ''}
+            </div>
+          </div>
         </div>
       </div>
-    `).join('');
+    `;
+  }).join('');
+}
+
+    window.selectRequestAndViewQuotes = (requestId) => { currentRequestId = requestId; showTab('quotes', document.querySelector('[onclick*="quotes"]')); loadQuotesForCurrentRequest(); };
+
+    async function loadQuotesForCurrentRequest() {
+      if (!currentRequestId) { document.getElementById('quotesList').innerHTML = '<div class="empty-state">Select a request to view quotes.</div>'; return; }
+      const quotes = await loadQuotesForRequest(currentRequestId);
+      const container = document.getElementById('quotesList');
+      if (!quotes.length) { container.innerHTML = '<div class="empty-state">No quotes yet.</div>'; return; }
+      let requestStatus = 'pending', acceptedShopId = null;
+      try { const reqData = await apiRequest(`/requests/${currentRequestId}`); if (reqData.success) { requestStatus = reqData.request.status; acceptedShopId = reqData.request.accepted_shop_id; } } catch (e) { }
+      container.innerHTML = quotes.map(q => {
+        const isAccepted = (requestStatus !== 'pending' && requestStatus !== 'cancelled') && acceptedShopId === q.shop_id;
+        return `<div class="request-card mb-3"><div class="flex justify-between"><span class="font-bold">${q.shop_name}</span><span class="price-tag">₹${q.price}</span></div><p class="text-sm">${q.message || 'No message'}</p>${!isAccepted ? `<button class="btn btn-primary btn-sm mt-2" onclick="acceptQuoteAndRefresh(${currentRequestId}, ${q.shop_id})">Accept Quote</button>` : `<p class="text-sm mt-2 text-green-600">✅ Accepted</p>`}${isAccepted && q.shop_phone ? `<p class="text-sm mt-2 bg-teal-50 p-2 rounded">📞 ${q.shop_phone}</p>` : ''}</div>`;
+      }).join('');
+    }
+
+    window.acceptQuoteAndRefresh = async (requestId, shopId) => { if (await acceptQuote(requestId, shopId)) loadQuotesForCurrentRequest(); };
+
+    // Chat functions
+    window.openChat = async (requestId, shopId) => {
+      chatRequestId = requestId;
+      chatReceiverId = shopId;
+      document.getElementById('chatModal').style.display = 'flex';
+      await loadChatMessages();
+    };
+    window.closeChat = () => document.getElementById('chatModal').style.display = 'none';
+    async function loadChatMessages() {
+      const data = await apiRequest(`/messages/request/${chatRequestId}`);
+      const container = document.getElementById('chatMessages');
+      if (!data.success) return;
+      container.innerHTML = data.messages.map(m => `<div class="mb-2 ${m.sender_id === user.id ? 'text-right' : ''}"><span class="inline-block p-2 rounded ${m.sender_id === user.id ? 'bg-teal-100' : 'bg-gray-100'}">${m.body}</span><div class="text-xs text-slate-400">${m.sender_name}</div></div>`).join('');
+      container.scrollTop = container.scrollHeight;
+    }
+    window.sendChatMessage = async () => {
+      const input = document.getElementById('chatInput');
+      const body = input.value.trim();
+      if (!body) return;
+      await apiRequest('/messages', 'POST', { request_id: chatRequestId, receiver_id: chatReceiverId, body });
+      input.value = '';
+      await loadChatMessages();
+    };
+
+    // Review functions
+    window.openReviewModal = (requestId) => { document.getElementById('reviewRequestId').value = requestId; document.getElementById('reviewModal').style.display = 'flex'; };
+    window.closeReviewModal = () => document.getElementById('reviewModal').style.display = 'none';
+    window.submitReview = async () => {
+      const requestId = document.getElementById('reviewRequestId').value;
+      const rating = document.getElementById('reviewRating').value;
+      const comment = document.getElementById('reviewComment').value;
+      const res = await apiRequest('/reviews', 'POST', { request_id: requestId, rating, comment });
+      if (res.success) { showToast('Review submitted!', 'success'); closeReviewModal(); loadMyRequests(); }
+    };
+
+    // Shop search
+    window.searchShops = async () => {
+      const q = document.getElementById('shopSearchInput').value;
+      let lat, lng;
+      try { const pos = await getCurrentPosition(); lat = pos.lat; lng = pos.lng; } catch (e) { }
+      const data = await apiRequest(`/shops/search?q=${encodeURIComponent(q)}${lat ? `&lat=${lat}&lng=${lng}` : ''}`);
+      const container = document.getElementById('shopSearchResults');
+      if (!data.shops.length) { container.innerHTML = '<div class="empty-state">No shops found</div>'; return; }
+      container.innerHTML = data.shops.map(s => `<div class="request-card mb-2"><div class="flex justify-between"><span class="font-bold">${s.name}</span><span>${s.avg_rating ? '⭐'.repeat(Math.round(s.avg_rating)) : 'No ratings'}</span></div><p>📞 ${s.phone}</p>${s.distance ? `<p>📍 ${s.distance.toFixed(1)} km away</p>` : ''}</div>`).join('');
+    };
+
+    window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('open');
+  
+  // Model catalog database
+const modelCatalog = {
+  Apple: ['iPhone 15 Pro Max', 'iPhone 15 Pro', 'iPhone 15 Plus', 'iPhone 15', 'iPhone 14 Pro Max', 'iPhone 14 Pro', 'iPhone 14 Plus', 'iPhone 14', 'iPhone 13 Pro Max', 'iPhone 13 Pro', 'iPhone 13', 'iPhone 13 mini', 'iPhone 12 Pro Max', 'iPhone 12 Pro', 'iPhone 12', 'iPhone 12 mini', 'iPhone SE (2022)', 'iPhone 11', 'iPhone XR', 'iPhone XS', 'iPhone X', 'iPhone 8 Plus', 'iPhone 8', 'iPad Pro', 'iPad Air', 'iPad', 'iPad mini'],
+  Samsung: ['Galaxy S24 Ultra', 'Galaxy S24+', 'Galaxy S24', 'Galaxy S23 Ultra', 'Galaxy S23+', 'Galaxy S23', 'Galaxy S22 Ultra', 'Galaxy S22+', 'Galaxy S22', 'Galaxy S21 FE', 'Galaxy Z Fold5', 'Galaxy Z Flip5', 'Galaxy A54', 'Galaxy A34', 'Galaxy A15', 'Galaxy M34', 'Galaxy M14', 'Galaxy Tab S9'],
+  Google: ['Pixel 8 Pro', 'Pixel 8', 'Pixel 8a', 'Pixel 7 Pro', 'Pixel 7', 'Pixel 7a', 'Pixel 6 Pro', 'Pixel 6', 'Pixel 6a', 'Pixel Fold', 'Pixel Tablet'],
+  OnePlus: ['OnePlus 12', 'OnePlus 12R', 'OnePlus 11', 'OnePlus 11R', 'OnePlus 10 Pro', 'OnePlus 10T', 'OnePlus 9 Pro', 'OnePlus 9', 'OnePlus Nord 3', 'OnePlus Nord CE 3 Lite', 'OnePlus Open'],
+  Xiaomi: ['Xiaomi 14 Ultra', 'Xiaomi 14 Pro', 'Xiaomi 14', 'Xiaomi 13 Pro', 'Xiaomi 13', 'Redmi Note 13 Pro+', 'Redmi Note 13 Pro', 'Redmi Note 13', 'Redmi 13C', 'Redmi 12', 'Poco F5 Pro', 'Poco F5', 'Poco X6 Pro', 'Poco X6', 'Poco M6 Pro'],
+  Oppo: ['Oppo Find X7 Ultra', 'Oppo Find X7', 'Oppo Reno11 Pro', 'Oppo Reno11', 'Oppo Reno10 Pro+', 'Oppo Reno10', 'Oppo F25 Pro', 'Oppo F23', 'Oppo A79', 'Oppo A59'],
+  Vivo: ['Vivo X100 Pro', 'Vivo X100', 'Vivo V30 Pro', 'Vivo V30', 'Vivo V29 Pro', 'Vivo V29', 'Vivo Y200', 'Vivo Y100', 'Vivo T3', 'Vivo T2'],
+  Realme: ['Realme GT 5 Pro', 'Realme GT 5', 'Realme 12 Pro+', 'Realme 12 Pro', 'Realme 12+', 'Realme 12', 'Realme 11 Pro+', 'Realme 11 Pro', 'Realme Narzo 70 Pro', 'Realme C67'],
+  Motorola: ['Moto G84 5G', 'Moto G54 5G', 'Moto G34 5G', 'Moto G14', 'Moto Edge 50 Pro', 'Moto Edge 50 Fusion', 'Moto Edge 40 Neo', 'Moto Razr 40 Ultra', 'Moto Razr 40'],
+  Nothing: ['Nothing Phone (2a)', 'Nothing Phone (2)', 'Nothing Phone (1)'],
+  Other: []
+};
+
+// Populate model dropdown based on selected brand
+function populateModels() {
+  const brand = document.getElementById('brand').value;
+  const modelSelect = document.getElementById('modelSelect');
+  const customInput = document.getElementById('modelCustom');
+  const hiddenModel = document.getElementById('model');
+
+  // Clear existing options
+  modelSelect.innerHTML = '<option value="">Select Model</option>';
+  
+  if (brand && modelCatalog[brand] && modelCatalog[brand].length > 0) {
+    modelCatalog[brand].forEach(model => {
+      const option = document.createElement('option');
+      option.value = model;
+      option.textContent = model;
+      modelSelect.appendChild(option);
+    });
+    modelSelect.style.display = 'block';
+    customInput.style.display = 'none';
+    hiddenModel.value = '';
+  } else if (brand === 'Other') {
+    modelSelect.style.display = 'none';
+    customInput.style.display = 'block';
+    customInput.placeholder = 'Enter device model';
+    hiddenModel.value = customInput.value;
+  } else {
+    modelSelect.style.display = 'block';
+    customInput.style.display = 'none';
   }
+  
+  // Update hidden field when model changes
+  updateHiddenModel();
+}
 
-  window.selectRequestAndViewQuotes = (requestId) => { currentRequestId = requestId; showTab('quotes', document.querySelector('[onclick*="quotes"]')); loadQuotesForCurrentRequest(); };
-
-  async function loadQuotesForCurrentRequest() {
-    if (!currentRequestId) { document.getElementById('quotesList').innerHTML = '<div class="empty-state">Select a request to view quotes.</div>'; return; }
-    const quotes = await loadQuotesForRequest(currentRequestId);
-    const container = document.getElementById('quotesList');
-    if (!quotes.length) { container.innerHTML = '<div class="empty-state">No quotes yet.</div>'; return; }
-    let requestStatus = 'pending', acceptedShopId = null;
-    try { const reqData = await apiRequest(`/requests/${currentRequestId}`); if (reqData.success) { requestStatus = reqData.request.status; acceptedShopId = reqData.request.accepted_shop_id; } } catch(e){}
-    container.innerHTML = quotes.map(q => {
-      const isAccepted = (requestStatus !== 'pending' && requestStatus !== 'cancelled') && acceptedShopId === q.shop_id;
-      return `<div class="request-card mb-3"><div class="flex justify-between"><span class="font-bold">${q.shop_name}</span><span class="price-tag">₹${q.price}</span></div><p class="text-sm">${q.message || 'No message'}</p>${!isAccepted ? `<button class="btn btn-primary btn-sm mt-2" onclick="acceptQuoteAndRefresh(${currentRequestId}, ${q.shop_id})">Accept Quote</button>` : `<p class="text-sm mt-2 text-green-600">✅ Accepted</p>`}${isAccepted && q.shop_phone ? `<p class="text-sm mt-2 bg-teal-50 p-2 rounded">📞 ${q.shop_phone}</p>` : ''}</div>`;
-    }).join('');
+function handleModelSelect() {
+  const brand = document.getElementById('brand').value;
+  const modelSelect = document.getElementById('modelSelect');
+  const customInput = document.getElementById('modelCustom');
+  
+  if (brand === 'Other') {
+    customInput.style.display = 'block';
+    modelSelect.style.display = 'none';
+  } else {
+    customInput.style.display = 'none';
   }
+  updateHiddenModel();
+}
 
-  window.acceptQuoteAndRefresh = async (requestId, shopId) => { if (await acceptQuote(requestId, shopId)) loadQuotesForCurrentRequest(); };
-
-  // Chat functions
-  window.openChat = async (requestId, shopId) => {
-    chatRequestId = requestId;
-    chatReceiverId = shopId;
-    document.getElementById('chatModal').style.display = 'flex';
-    await loadChatMessages();
-  };
-  window.closeChat = () => document.getElementById('chatModal').style.display = 'none';
-  async function loadChatMessages() {
-    const data = await apiRequest(`/messages/request/${chatRequestId}`);
-    const container = document.getElementById('chatMessages');
-    if (!data.success) return;
-    container.innerHTML = data.messages.map(m => `<div class="mb-2 ${m.sender_id === user.id ? 'text-right' : ''}"><span class="inline-block p-2 rounded ${m.sender_id === user.id ? 'bg-teal-100' : 'bg-gray-100'}">${m.body}</span><div class="text-xs text-slate-400">${m.sender_name}</div></div>`).join('');
-    container.scrollTop = container.scrollHeight;
+function updateHiddenModel() {
+  const brand = document.getElementById('brand').value;
+  const modelSelect = document.getElementById('modelSelect');
+  const customInput = document.getElementById('modelCustom');
+  const hiddenModel = document.getElementById('model');
+  
+  if (brand === 'Other') {
+    hiddenModel.value = customInput.value;
+  } else {
+    hiddenModel.value = modelSelect.value;
   }
-  window.sendChatMessage = async () => {
-    const input = document.getElementById('chatInput');
-    const body = input.value.trim();
-    if (!body) return;
-    await apiRequest('/messages', 'POST', { request_id: chatRequestId, receiver_id: chatReceiverId, body });
-    input.value = '';
-    await loadChatMessages();
-  };
+}
 
-  // Review functions
-  window.openReviewModal = (requestId) => { document.getElementById('reviewRequestId').value = requestId; document.getElementById('reviewModal').style.display = 'flex'; };
-  window.closeReviewModal = () => document.getElementById('reviewModal').style.display = 'none';
-  window.submitReview = async () => {
-    const requestId = document.getElementById('reviewRequestId').value;
-    const rating = document.getElementById('reviewRating').value;
-    const comment = document.getElementById('reviewComment').value;
-    const res = await apiRequest('/reviews', 'POST', { request_id: requestId, rating, comment });
-    if (res.success) { showToast('Review submitted!', 'success'); closeReviewModal(); loadMyRequests(); }
-  };
-
-  // Shop search
-  window.searchShops = async () => {
-    const q = document.getElementById('shopSearchInput').value;
-    let lat, lng;
-    try { const pos = await getCurrentPosition(); lat = pos.lat; lng = pos.lng; } catch(e){}
-    const data = await apiRequest(`/shops/search?q=${encodeURIComponent(q)}${lat ? `&lat=${lat}&lng=${lng}` : ''}`);
-    const container = document.getElementById('shopSearchResults');
-    if (!data.shops.length) { container.innerHTML = '<div class="empty-state">No shops found</div>'; return; }
-    container.innerHTML = data.shops.map(s => `<div class="request-card mb-2"><div class="flex justify-between"><span class="font-bold">${s.name}</span><span>${s.avg_rating ? '⭐'.repeat(Math.round(s.avg_rating)) : 'No ratings'}</span></div><p>📞 ${s.phone}</p>${s.distance ? `<p>📍 ${s.distance.toFixed(1)} km away</p>` : ''}</div>`).join('');
-  };
-
-  window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('open');
-</script>
+// Listen for custom input changes
+document.addEventListener('DOMContentLoaded', function() {
+  const customInput = document.getElementById('modelCustom');
+  if (customInput) {
+    customInput.addEventListener('input', updateHiddenModel);
+  }
+  
+  // Also set up form submission to use the hidden field
+  const form = document.getElementById('requestForm');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      // Ensure hidden model field is updated before submit
+      updateHiddenModel();
+    });
+  }
+});  
+  </script>
 </body>
+
 </html>
