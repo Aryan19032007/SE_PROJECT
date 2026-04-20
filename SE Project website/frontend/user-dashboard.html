@@ -320,7 +320,11 @@
     return `
       <div class="request-card mb-3">
         <div class="flex gap-4">
-          ${imageUrl ? `<img src="${imageUrl}" alt="Damage" style="width:80px; height:80px; object-fit:cover; border-radius:8px;">` : ''}
+          ${imageUrl ? `
+  <div style="cursor:pointer;" onclick="openLightbox('${imageUrl}')">
+    <img src="${imageUrl}" alt="Damage" style="width:80px; height:80px; object-fit:cover; border-radius:8px; border:1px solid #e2e8f0;">
+  </div>
+` : ''}
           <div class="flex-1">
             <div class="flex justify-between">
               <h4 class="font-bold">${r.brand} ${r.model}</h4>
@@ -496,8 +500,35 @@ document.addEventListener('DOMContentLoaded', function() {
       updateHiddenModel();
     });
   }
-});  
+}); 
+// Lightbox functions
+function openLightbox(imageUrl) {
+  const lightbox = document.getElementById('imageLightbox');
+  const lightboxImg = document.getElementById('lightboxImage');
+  lightboxImg.src = imageUrl;
+  lightbox.style.display = 'flex';
+  // Prevent body scroll
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+  document.getElementById('imageLightbox').style.display = 'none';
+  document.body.style.overflow = 'auto';
+}
+
+// Close lightbox with Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeLightbox();
+  }
+}); 
   </script>
+
+  <!-- Image Lightbox Modal -->
+<div id="imageLightbox" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:2000; align-items:center; justify-content:center;" onclick="closeLightbox()">
+  <span style="position:absolute; top:20px; right:30px; color:white; font-size:40px; font-weight:bold; cursor:pointer;" onclick="closeLightbox()">&times;</span>
+  <img id="lightboxImage" src="" alt="Enlarged view" style="max-width:90%; max-height:90%; object-fit:contain; border-radius:12px;" onclick="event.stopPropagation()"/>
+</div>
 </body>
 
 </html>
