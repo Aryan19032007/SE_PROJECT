@@ -3,19 +3,10 @@ const db = require('../db');
 const auth = require('../middleware/auth');
 const router = express.Router();
 
-// List of admin emails (add yours here)
-const ADMIN_EMAILS = ['admin@fixbit.com', 'admin@gmail.com'];
-
 // Admin check middleware
 const adminAuth = (req, res, next) => {
-  const userEmail = req.user.email;
-  console.log('Admin check - User email:', userEmail);
-  
-  if (!userEmail) {
-    return res.status(403).json({ success: false, message: 'No email in token' });
-  }
-  
-  if (!ADMIN_EMAILS.includes(userEmail.toLowerCase())) {
+  const adminEmails = ['admin@fixbit.com']; // Add your admin emails
+  if (!adminEmails.includes(req.user.email)) {
     return res.status(403).json({ success: false, message: 'Admin access only' });
   }
   next();
@@ -34,6 +25,20 @@ router.get('/users', auth, adminAuth, async (req, res) => {
   }
 });
 
+// Ban / Unban user
+router.put('/users/:id/ban', auth, adminAuth, async (req, res) => {
+  const { id } = req.params;
+  const { banned } = req.body; // boolean
+
+  try {
+    await db.query('UPDATE users SET banned = ? WHERE id = ?', [banned ? 1 : 0, id]);
+    res.json({ success: true, message: `User ${banned ? 'banned' : 'unbanned'} successfully` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to update ban status' });
+  }
+});
+
 // Get all requests
 router.get('/requests', auth, adminAuth, async (req, res) => {
   try {
@@ -48,18 +53,6 @@ router.get('/requests', auth, adminAuth, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Failed to fetch requests' });
-  }
-});
-
-// Toggle user ban
-router.put('/users/:id/ban', auth, adminAuth, async (req, res) => {
-  const { banned } = req.body;
-  try {
-    await db.query('UPDATE users SET banned = ? WHERE id = ?', [banned ? 1 : 0, req.params.id]);
-    res.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: 'Failed to update user' });
   }
 });
 

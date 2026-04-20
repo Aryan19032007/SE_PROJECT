@@ -170,23 +170,31 @@
   }
 
   function renderNearby(requests) {
-    const container = document.getElementById('nearbyList');
-    if (!requests.length) {
-      container.innerHTML = '<div class="empty-state">No nearby requests</div>';
-      return;
-    }
-    container.innerHTML = requests.map(r => `
-      <div class="request-card mb-3">
-        <div class="flex justify-between">
-          <h4 class="font-bold">${r.brand} ${r.model}</h4>
-          <span class="dist-badge">📍 ${r.distance.toFixed(1)} km</span>
-        </div>
-        <p class="text-sm">${r.issue_type} - ${r.description}</p>
-        <p class="text-xs text-slate-400 mt-1">Radius: ${r.radius} km</p>
-        <button class="btn btn-primary btn-sm mt-3" onclick="openQuoteModal(${r.id})">Send Quote</button>
-      </div>
-    `).join('');
+  const container = document.getElementById('nearbyList');
+  if (!requests.length) {
+    container.innerHTML = '<div class="empty-state">No nearby requests</div>';
+    return;
   }
+  container.innerHTML = requests.map(r => {
+    const imageUrl = r.image ? `${API_BASE.replace('/api', '')}/uploads/${r.image}` : null;
+    return `
+      <div class="request-card mb-3">
+        <div class="flex gap-4">
+          ${imageUrl ? `<img src="${imageUrl}" alt="Damage" style="width:80px; height:80px; object-fit:cover; border-radius:8px;">` : ''}
+          <div class="flex-1">
+            <div class="flex justify-between">
+              <h4 class="font-bold">${r.brand} ${r.model}</h4>
+              <span class="dist-badge">📍 ${r.distance.toFixed(1)} km</span>
+            </div>
+            <p class="text-sm">${r.issue_type} - ${r.description}</p>
+            <p class="text-xs text-slate-400 mt-1">Radius: ${r.radius} km</p>
+            <button class="btn btn-primary btn-sm mt-3" onclick="openQuoteModal(${r.id})">Send Quote</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
 
   window.openQuoteModal = (requestId) => {
     document.getElementById('modalRequestId').value = requestId;

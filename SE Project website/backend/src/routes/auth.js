@@ -60,12 +60,16 @@ router.post('/login', async (req, res) => {
     if (!match) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
+    // Check if user is banned
+    if (user.banned) {
+      return res.status(403).json({ success: false, message: 'Your account has been banned. Contact support.' });
+    }
 
     const token = jwt.sign(
-  { id: user.id, role: user.role, email: user.email },
-  process.env.JWT_SECRET,
-  { expiresIn: '7d' }
-);
+      { id: user.id, role: user.role, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
     const { password: _, ...safeUser } = user;
     res.json({ success: true, user: safeUser, token });
   } catch (err) {
