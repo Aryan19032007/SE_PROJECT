@@ -675,3 +675,131 @@ h1, h2, h3, h4, h5 {
   width: 100%;
   border-radius: 12px;
 }
+/* Additional styles for new index page */
+.step-card {
+  text-align: center;
+  padding: 2rem 1.5rem;
+  background: var(--white);
+  border-radius: 24px;
+  border: 1px solid var(--slate-100);
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+body.dark .step-card {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+.step-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: var(--shadow-xl), 0 0 0 2px rgba(20, 184, 166, 0.1);
+}
+.step-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin: 0 auto 1.5rem;
+  color: white;
+}
+.step-num {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+}
+
+/* Glass card */
+.glass-card {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+}
+
+/* Dark mode additions */
+body.dark .step-card p,
+body.dark .card p {
+  color: #cbd5e1;
+}
+body.dark .badge-teal {
+  background: #0d9488;
+  color: white;
+}
+
+/* Counter animation */
+.counter {
+  display: inline-block;
+}
+/* Admin Panel Table Visibility Fix */
+table tbody tr td {
+  color: #1e293b !important;  /* Dark slate for light mode */
+  font-weight: 400;
+  background-color: #ffffff;
+}
+
+body.dark table tbody tr td {
+  color: #f1f5f9 !important;  /* Light gray for dark mode */
+  background-color: #1e293b;
+}
+
+/* Ensure table headers are readable */
+table thead tr th {
+  color: #334155;
+  font-weight: 600;
+  background-color: #f8fafc;
+}
+
+body.dark table thead tr th {
+  color: #cbd5e1;
+  background-color: #0f172a;
+}
+
+/* Row hover effect (optional, keep subtle) */
+table tbody tr:hover td {
+  background-color: #f1f5f9 !important;
+}
+
+body.dark table tbody tr:hover td {
+  background-color: #334155 !important;
+}
+
+/* Badge styling for better visibility */
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-teal {
+  background: #ccfbf1;
+  color: #0f766e;
+}
+
+body.dark .badge-teal {
+  background: #0f766e;
+  color: #ccfbf1;
+}
+
+.badge-orange {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+body.dark .badge-orange {
+  background: #c2410c;
+  color: #fff7ed;
+}
+
+/* Button styling in table */
+table .btn-sm {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+}
