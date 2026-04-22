@@ -3,10 +3,9 @@ const multer = require('multer');
 const path = require('path');
 const db = require('../db');
 const auth = require('../middleware/auth');
-const { sendEmail } = require('../utils/email');
 const router = express.Router();
 
-// Multer config
+// Multer config (local storage – switch to Cloudinary for production)
 const storage = multer.diskStorage({
   destination: path.join(__dirname, '../uploads'),
   filename: (req, file, cb) => {
@@ -23,21 +22,24 @@ const upload = multer({
   }
 });
 
-// Submit request
+// ==================== SUBMIT REQUEST ====================
 router.post('/', auth, upload.single('image'), async (req, res) => {
   if (req.user.role !== 'user') {
     return res.status(403).json({ success: false, message: 'Only users can create requests' });
   }
-  const { brand, model, issue_type, description, latitude, longitude, radius } = req.body;
+
+  const { brand, model, device_type, issue_type, description, latitude, longitude, radius } = req.body;
   const image = req.file ? req.file.filename : null;
-  if (!brand || !model || !issue_type || !description || !latitude || !longitude) {
+
+  if (!brand || !model || !device_type || !issue_type || !description || !latitude || !longitude) {
     return res.status(400).json({ success: false, message: 'Missing required fields' });
   }
+
   try {
     const [result] = await db.query(
-      `INSERT INTO requests (user_id, brand, model, issue_type, description, image, latitude, longitude, radius)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [req.user.id, brand, model, issue_type, description, image, latitude, longitude, radius || 10]
+      `INSERT INTO requests (user_id, brand, model, device_type, issue_type, description, image, latitude, longitude, radius)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [req.user.id, brand, model, device_type, issue_type, description, image, latitude, longitude, radius || 10]
     );
     res.status(201).json({ success: true, requestId: result.insertId });
   } catch (err) {
@@ -46,7 +48,7 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
   }
 });
 
-// Get nearby requests (shop)
+// ==================== GET NEARBY REQUESTS (SHOP) ====================
 router.get('/nearby', auth, async (req, res) => {
   if (req.user.role !== 'shop') {
     return res.status(403).json({ success: false, message: 'Only shops can view nearby requests' });
@@ -55,6 +57,7 @@ router.get('/nearby', auth, async (req, res) => {
   if (!lat || !lng) {
     return res.status(400).json({ success: false, message: 'Latitude and longitude required' });
   }
+
   try {
     const [requests] = await db.query(
       `SELECT r.*, u.name as user_name,
@@ -77,11 +80,12 @@ router.get('/nearby', auth, async (req, res) => {
   }
 });
 
-// Get user's own requests
+// ==================== GET USER'S OWN REQUESTS ====================
 router.get('/my', auth, async (req, res) => {
   if (req.user.role !== 'user') {
     return res.status(403).json({ success: false, message: 'Access denied' });
   }
+
   try {
     const [requests] = await db.query(
       `SELECT r.*,
@@ -99,7 +103,7 @@ router.get('/my', auth, async (req, res) => {
   }
 });
 
-// Get single request
+// ==================== GET SINGLE REQUEST ====================
 router.get('/:id', auth, async (req, res) => {
   const requestId = req.params.id;
   try {
@@ -127,7 +131,7 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
-// Accept quote
+// ==================== ACCEPT QUOTE ====================
 router.put('/:id/accept', auth, async (req, res) => {
   if (req.user.role !== 'user') {
     return res.status(403).json({ success: false, message: 'Only users can accept quotes' });
@@ -137,6 +141,7 @@ router.put('/:id/accept', auth, async (req, res) => {
   if (!shop_id) {
     return res.status(400).json({ success: false, message: 'shop_id is required' });
   }
+
   try {
     const [requests] = await db.query(
       'SELECT * FROM requests WHERE id = ? AND user_id = ?',
@@ -145,6 +150,7 @@ router.put('/:id/accept', auth, async (req, res) => {
     if (requests.length === 0) {
       return res.status(404).json({ success: false, message: 'Request not found' });
     }
+
     const [responses] = await db.query(
       'SELECT id FROM responses WHERE request_id = ? AND shop_id = ?',
       [requestId, shop_id]
@@ -152,11 +158,11 @@ router.put('/:id/accept', auth, async (req, res) => {
     if (responses.length === 0) {
       return res.status(400).json({ success: false, message: 'No quote from this shop' });
     }
+
     await db.query(
       'UPDATE requests SET status = ?, accepted_shop_id = ? WHERE id = ?',
       ['accepted', shop_id, requestId]
     );
-    // Notify shop?
     res.json({ success: true, message: 'Quote accepted' });
   } catch (err) {
     console.error(err);
@@ -164,7 +170,7 @@ router.put('/:id/accept', auth, async (req, res) => {
   }
 });
 
-// Update request status (shop)
+// ==================== UPDATE REQUEST STATUS (SHOP) ====================
 router.put('/:id/status', auth, async (req, res) => {
   if (req.user.role !== 'shop') {
     return res.status(403).json({ success: false, message: 'Only shops can update status' });
@@ -175,6 +181,7 @@ router.put('/:id/status', auth, async (req, res) => {
   if (!allowed.includes(status)) {
     return res.status(400).json({ success: false, message: 'Invalid status' });
   }
+
   try {
     const [requests] = await db.query(
       'SELECT user_id FROM requests WHERE id = ? AND accepted_shop_id = ?',
@@ -183,17 +190,8 @@ router.put('/:id/status', auth, async (req, res) => {
     if (requests.length === 0) {
       return res.status(404).json({ success: false, message: 'Request not found or not assigned to you' });
     }
-    await db.query('UPDATE requests SET status = ? WHERE id = ?', [status, requestId]);
 
-    // Send email notification to user
-    const [userResult] = await db.query('SELECT email, name FROM users WHERE id = ?', [requests[0].user_id]);
-    if (userResult[0]?.email) {
-      sendEmail(
-        userResult[0].email,
-        `FixBit: Repair status updated to ${status}`,
-        `Hello ${userResult[0].name},\n\nYour repair request #${requestId} is now ${status}.`
-      );
-    }
+    await db.query('UPDATE requests SET status = ? WHERE id = ?', [status, requestId]);
     res.json({ success: true });
   } catch (err) {
     console.error(err);
