@@ -124,3 +124,17 @@ CREATE TABLE shop_images (
   FOREIGN KEY (shop_id) REFERENCES users(id) ON DELETE CASCADE,
   INDEX idx_shop_id (shop_id)
 );
+
+-- shop details which we collected from Nehru Place
+
+USE fixbit;
+SET @default_password = '$2b$10$ZQz5QZ5QZ5QZ5QZ5QZ5QZueWqL5QZ5QZ5QZ5QZ5QZ5QZ5QZ5QZ5Q';
+SET @base_lat = 28.5495;
+SET @base_lng = 77.2506;
+DELETE FROM users WHERE phone IN ('8744841920','9576152569','8799705881','9958811539','8537858585','8285744902');
+INSERT INTO users (name, email, phone, password, role, latitude, longitude, banned, created_at) VALUES ('Shri Kalka Mobile Repair', NULL, '8744841920', @default_password, 'shop', @base_lat, @base_lng, 0, NOW());
+INSERT INTO users (name, email, phone, password, role, latitude, longitude, banned, created_at) VALUES ('Expert Team', NULL, '9576152569', @default_password, 'shop', @base_lat, @base_lng + 0.001, 0, NOW());
+INSERT INTO users (name, email, phone, password, role, latitude, longitude, banned, created_at) VALUES ('BRC Computer', NULL, '8799705881', @default_password, 'shop', @base_lat + 0.001, @base_lng, 0, NOW());
+INSERT INTO users (name, email, phone, password, role, latitude, longitude, banned, created_at) VALUES ('Fone Box', NULL, '9958811539', @default_password, 'shop', @base_lat, @base_lng - 0.001, 0, NOW());
+INSERT INTO users (name, email, phone, password, role, latitude, longitude, banned, created_at) VALUES ('JMK', NULL, '8537858585', @default_password, 'shop', @base_lat - 0.001, @base_lng, 0, NOW());
+INSERT INTO users (name, email, phone, password, role, latitude, longitude, banned, created_at) VALUES ('Mobi World', NULL, '8285744902', @default_password, 'shop', @base_lat + 0.0007, @base_lng + 0.0007, 0, NOW());
